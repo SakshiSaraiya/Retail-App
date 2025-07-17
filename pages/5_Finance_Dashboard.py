@@ -53,15 +53,17 @@ except Exception as e:
 st.subheader("📦 Category-wise Profitability")
 
 try:
-    # Group sales by category
-    revenue_by_category = sales.groupby("category")["total_amount"].sum().reset_index()
+    # Revenue by category from merged sales_products
+    sales_products['total_revenue'] = sales_products['selling_price'] * sales_products['quantity_sold']
+    revenue_by_category = sales_products.groupby("category")["total_revenue"].sum().reset_index()
     revenue_by_category.columns = ["Category", "Revenue"]
 
-    # Group purchases by category
-    cogs_by_category = purchases.groupby("category")["total_cost"].sum().reset_index()
+    # COGS by category from merged purchases_products
+    purchases_products['total_cogs'] = purchases_products['cost_price'] * purchases_products['quantity_purchased']
+    cogs_by_category = purchases_products.groupby("category")["total_cogs"].sum().reset_index()
     cogs_by_category.columns = ["Category", "COGS"]
 
-    # Merge and compute profitability
+    # Merge and calculate profitability
     profit_df = pd.merge(revenue_by_category, cogs_by_category, on="Category", how="outer").fillna(0)
     profit_df["Profit"] = profit_df["Revenue"] - profit_df["COGS"]
     profit_df["Margin (%)"] = round((profit_df["Profit"] / profit_df["Revenue"]) * 100, 2)
