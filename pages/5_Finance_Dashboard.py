@@ -52,22 +52,24 @@ except Exception as e:
 st.subheader("📦 Category-wise Profitability")
 
 try:
-    # Merge sales with products to get cost_price and category
-    sales_with_costs = pd.merge(sales, products[['product_id', 'cost_price', 'category']], on='product_id', how='left')
+    # Merge sales with purchases to get category and cost info
+    sales_with_cost = pd.merge(
+        sales,
+        purchases[['product_id', 'cost_price', 'category']],
+        on='product_id',
+        how='left'
+    )
 
-    # Calculate revenue and COGS based on sold units
-    sales_with_costs["revenue"] = sales_with_costs["quantity_sold"] * sales_with_costs["selling_price"]
-    sales_with_costs["cogs"] = sales_with_costs["quantity_sold"] * sales_with_costs["cost_price"]
+    sales_with_cost["revenue"] = sales_with_cost["quantity_sold"] * sales_with_cost["selling_price"]
+    sales_with_cost["cogs"] = sales_with_cost["quantity_sold"] * sales_with_cost["cost_price"]
 
-    # Group by category
-    revenue_by_category = sales_with_costs.groupby("category")["revenue"].sum().reset_index()
-    revenue_by_category.columns = ["Category", "Revenue"]
+    # Aggregate revenue and cost by category
+    revenue_by_category = sales_with_cost.groupby("category")["revenue"].sum().reset_index()
+    cogs_by_category = sales_with_cost.groupby("category")["cogs"].sum().reset_index()
 
-    cogs_by_category = sales_with_costs.groupby("category")["cogs"].sum().reset_index()
-    cogs_by_category.columns = ["Category", "COGS"]
-
-    # Merge and calculate profit and margin
-    profit_df = pd.merge(revenue_by_category, cogs_by_category, on="Category", how="outer").fillna(0)
+    # Merge Revenue and COGS
+    profit_df = pd.merge(revenue_by_category, cogs_by_category, on="category", how="outer").fillna(0)
+    profit_df.columns = ["Category", "Revenue", "COGS"]
     profit_df["Profit"] = profit_df["Revenue"] - profit_df["COGS"]
     profit_df["Margin (%)"] = np.where(
         profit_df["Revenue"] > 0,
@@ -75,7 +77,7 @@ try:
         0
     )
 
-    # Display
+    # Display Dataframe
     st.dataframe(
         profit_df.style.format({
             "Revenue": "₹{:,.2f}",
@@ -85,14 +87,14 @@ try:
         })
     )
 
-    # Chart
+    # Plot
     fig = px.bar(
         profit_df,
         x="Category",
         y="Profit",
         color="Margin (%)",
         color_continuous_scale="Bluered",
-        title="Profit by Category"
+        title="Profit by Category (Based on Sold Quantities)"
     )
     st.plotly_chart(fig, use_container_width=True)
 
