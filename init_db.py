@@ -2,10 +2,10 @@ import mysql.connector
 
 # Define your Clever Cloud DB credentials
 config = {
-    "host": "bi8sxvswtshvd8mok6ev-mysql.services.clever-cloud.com",
-    "user": "uxl6ku8uc7vfksfr",
-    "password": "KeB1IT85UYg0HcDY2UUm",
-    "database": "bi8sxvswtshvd8mok6ev",
+    "host": "bv3ujjbvpicnpoubldj3-mysql.services.clever-cloud.com",
+    "user": "u1zhzkmobpodazeq",
+    "password": "umNG9W0xHh2MexvDoYqf",
+    "database": "bv3ujjbvpicnpoubldj3",
     "port": 3306
 }
 
