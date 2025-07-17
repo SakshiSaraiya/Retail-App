@@ -1,7 +1,7 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import plotly.express as px
-import numpy as np  # Added missing import
+import numpy as np
 from db_connector import get_connection
 
 st.set_page_config(page_title="💰 Finance Dashboard", layout="wide")
@@ -31,10 +31,9 @@ except Exception as e:
 # -------------------------
 try:
     sales_products = pd.merge(sales, products, on='product_id', how='left')
-    purchases_products = pd.merge(purchases, products, on='product_id', how='left')
 
     total_revenue = (sales_products['selling_price'] * sales_products['quantity_sold']).sum()
-    total_cogs = (purchases_products['cost_price'] * purchases_products['quantity_purchased']).sum()
+    total_cogs = (sales_products['cost_price'] * sales_products['quantity_sold']).sum()
     gross_profit = total_revenue - total_cogs
     gross_margin_pct = (gross_profit / total_revenue * 100) if total_revenue > 0 else 0
 
@@ -50,26 +49,24 @@ except Exception as e:
 # -------------------------
 # Profit by Category Chart
 # -------------------------
-import numpy as np
-
 st.subheader("📦 Category-wise Profitability")
 
 try:
-    # Add total_amount to sales
-    sales["total_amount"] = sales["quantity_sold"] * sales["selling_price"]
-    
-    # Merge sales with product to get category and revenue info
-    sales_with_category = pd.merge(sales, purchases[['product_id', 'category']], on='product_id', how='left')
-    revenue_by_category = sales_with_category.groupby("category")["total_amount"].sum().reset_index()
+    # Merge sales with products to get cost_price and category
+    sales_with_costs = pd.merge(sales, products[['product_id', 'cost_price', 'category']], on='product_id', how='left')
+
+    # Calculate revenue and COGS based on sold units
+    sales_with_costs["revenue"] = sales_with_costs["quantity_sold"] * sales_with_costs["selling_price"]
+    sales_with_costs["cogs"] = sales_with_costs["quantity_sold"] * sales_with_costs["cost_price"]
+
+    # Group by category
+    revenue_by_category = sales_with_costs.groupby("category")["revenue"].sum().reset_index()
     revenue_by_category.columns = ["Category", "Revenue"]
 
-    # Merge purchases with product to get category and cost info
-    # Use category directly from purchases table
-    purchases["total_cost"] = purchases["quantity_purchased"] * purchases["cost_price"]
-    cogs_by_category = purchases.groupby("category")["total_cost"].sum().reset_index()
+    cogs_by_category = sales_with_costs.groupby("category")["cogs"].sum().reset_index()
     cogs_by_category.columns = ["Category", "COGS"]
 
-    # Merge Revenue and COGS
+    # Merge and calculate profit and margin
     profit_df = pd.merge(revenue_by_category, cogs_by_category, on="Category", how="outer").fillna(0)
     profit_df["Profit"] = profit_df["Revenue"] - profit_df["COGS"]
     profit_df["Margin (%)"] = np.where(
@@ -77,9 +74,6 @@ try:
         round((profit_df["Profit"] / profit_df["Revenue"]) * 100, 2),
         0
     )
-
-    # Replace infinities or NaNs
-    profit_df["Margin (%)"] = profit_df["Margin (%)"].replace([np.inf, -np.inf], 0).fillna(0)
 
     # Display
     st.dataframe(
@@ -91,7 +85,7 @@ try:
         })
     )
 
-    # Optional: Plot
+    # Chart
     fig = px.bar(
         profit_df,
         x="Category",
