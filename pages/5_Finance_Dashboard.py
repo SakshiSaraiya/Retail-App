@@ -17,7 +17,7 @@ conn = get_connection()
 # Load Data
 # -------------------------
 try:
-    products = pd.read_sql("SELECT * FROM inventory", conn)
+    products = pd.read_sql("SELECT * FROM product", conn)
     purchases = pd.read_sql("SELECT * FROM purchases", conn)
     sales = pd.read_sql("SELECT * FROM sales", conn)
 except Exception as e:
