@@ -55,6 +55,9 @@ import numpy as np
 st.subheader("📦 Category-wise Profitability")
 
 try:
+    # Add total_amount to sales
+    sales["total_amount"] = sales["quantity_sold"] * sales["selling_price"]
+    
     # Merge sales with product to get category and revenue info
     sales_with_category = pd.merge(sales, purchases[['product_id', 'category']], on='product_id', how='left')
     revenue_by_category = sales_with_category.groupby("category")["total_amount"].sum().reset_index()
