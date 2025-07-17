@@ -101,3 +101,51 @@ try:
 except Exception as e:
     st.error("❌ Error in category profitability section.")
     st.exception(e)
+
+# -------------------------
+# Inventory Holding Cost & DIO
+# -------------------------
+st.subheader("🏬 Inventory Holding Cost & Efficiency")
+
+try:
+    # Merge purchases and sales to compute current inventory
+    inventory_df = pd.merge(purchases, sales[['product_id', 'quantity_sold']], on='product_id', how='left')
+    inventory_df['quantity_sold'] = inventory_df['quantity_sold'].fillna(0)
+
+    # Current Inventory = Purchased - Sold
+    inventory_df['quantity_remaining'] = inventory_df['quantity_purchased'] - inventory_df['quantity_sold']
+    inventory_df['inventory_value'] = inventory_df['quantity_remaining'] * inventory_df['cost_price']
+
+    # Total inventory value
+    total_inventory_value = inventory_df['inventory_value'].sum()
+
+    # Holding cost rate input
+    holding_cost_rate = st.slider("🏷️ Monthly Holding Cost Rate (% of inventory value)", min_value=0.0, max_value=10.0, value=2.0, step=0.1)
+    monthly_holding_cost = (holding_cost_rate / 100) * total_inventory_value
+
+    # Calculate Average Inventory (simplified as 50% of current inventory)
+    average_inventory_value = total_inventory_value / 2
+
+    # Total COGS for DIO
+    total_cogs = (purchases['cost_price'] * purchases['quantity_purchased']).sum()
+
+    # Date range for sales period
+    if not sales.empty and 'sale_date' in sales.columns:
+        sales['sale_date'] = pd.to_datetime(sales['sale_date'])
+        date_range_days = (sales['sale_date'].max() - sales['sale_date'].min()).days or 1
+    else:
+        date_range_days = 30  # fallback
+
+    # DIO Calculation
+    dio = (average_inventory_value / total_cogs) * date_range_days if total_cogs > 0 else 0
+
+    # Display Metrics
+    col1, col2, col3 = st.columns(3)
+    col1.metric("📦 Current Inventory Value", f"₹{total_inventory_value:,.2f}")
+    col2.metric("📉 Monthly Holding Cost", f"₹{monthly_holding_cost:,.2f}")
+    col3.metric("📅 Days Inventory Outstanding (DIO)", f"{dio:.1f} days")
+
+except Exception as e:
+    st.error("❌ Error calculating inventory holding cost or DIO.")
+    st.exception(e)
+
