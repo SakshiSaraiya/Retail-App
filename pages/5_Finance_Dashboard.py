@@ -16,7 +16,7 @@ conn = get_connection()
 # -------------------------
 purchases = pd.read_sql("SELECT * FROM purchases", conn)
 sales = pd.read_sql("SELECT * FROM sales", conn)
-products = pd.read_sql("SELECT * FROM products", conn)
+products = pd.read_sql("SELECT * FROM product", conn)
 
 # -------------------------
 # Merge Purchase and Sales
