@@ -59,44 +59,27 @@ except Exception as e:
 # -------------------------
 # Profit by Category Chart
 # -------------------------
-st.markdown("### 🧮 Profitability by Product Category")
+# --- Category Profitability ---
+st.subheader("📦 Category-wise Profitability")
 
-try:
-    revenue_per_category = (
-        sales_products
-        .groupby('category')
-        .apply(lambda df: (df['selling_price'] * df['quantity_sold']).sum())
-        .reset_index(name='Revenue')
-    )
+# Group sales by category to get Revenue
+revenue_by_category = sales.groupby("category")["total_amount"].sum().reset_index()
+revenue_by_category.columns = ["Category", "Revenue"]
 
-    cogs_per_category = (
-        purchases_products
-        .groupby('category')
-        .apply(lambda df: (df['cost_price'] * df['quantity_purchased']).sum())
-        .reset_index(name='COGS')
-    )
+# Group purchases by category to get COGS
+cogs_by_category = purchases.groupby("category")["total_cost"].sum().reset_index()
+cogs_by_category.columns = ["Category", "COGS"]
 
-    profit_df = pd.merge(revenue_per_category, cogs_per_category, on='category', how='outer').fillna(0)
-    profit_df['Profit'] = profit_df['Revenue'] - profit_df['COGS']
+# Merge both
+profit_df = pd.merge(revenue_by_category, cogs_by_category, on="Category", how="outer").fillna(0)
+profit_df["Profit"] = profit_df["Revenue"] - profit_df["COGS"]
+profit_df["Margin (%)"] = round((profit_df["Profit"] / profit_df["Revenue"]) * 100, 2)
+profit_df["Margin (%)"] = profit_df["Margin (%)"].replace([np.inf, -np.inf], 0).fillna(0)
 
-    if profit_df.empty:
-        st.warning("⚠️ No data available to display category-wise profitability.")
-    else:
-        st.dataframe(profit_df, use_container_width=True)
+# Display
+st.dataframe(profit_df.style.format({"Revenue": "₹{:,.2f}", "COGS": "₹{:,.2f}", "Profit": "₹{:,.2f}", "Margin (%)": "{:.2f}%"}))
 
-        fig = px.bar(
-            profit_df,
-            x="category",
-            y="Profit",
-            title="Profitability by Product Category",
-            labels={"Profit": "Profit (₹)", "category": "Category"},
-            color="Profit",
-            color_continuous_scale="Viridis"
-        )
-        st.plotly_chart(fig, use_container_width=True)
+# Optional: Plot
+fig = px.bar(profit_df, x="Category", y="Profit", color="Margin (%)", color_continuous_scale="Bluered", title="Profit by Category")
+st.plotly_chart(fig, use_container_width=True)
 
-except Exception as e:
-    st.error("❌ Error in category profitability section.")
-    st.exception(e)
-
-st.markdown("🔖 _All metrics derived from sales, purchases, and inventory tables._")
