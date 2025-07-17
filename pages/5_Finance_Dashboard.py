@@ -30,7 +30,7 @@ except Exception as e:
 # Merge and Financial Metrics
 # -------------------------
 try:
-    sales_products = pd.merge(sales, products, on='product_id', how='left')
+    sales_products = pd.merge(sales, purchases, on='product_id', how='left')
 
     total_revenue = (sales_products['selling_price'] * sales_products['quantity_sold']).sum()
     total_cogs = (sales_products['cost_price'] * sales_products['quantity_sold']).sum()
