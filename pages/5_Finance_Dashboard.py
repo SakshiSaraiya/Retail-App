@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from db_connector import get_connection  # Ensure this returns your MySQL connection object
+from db_connector import get_connection
 
 st.set_page_config(page_title="💰 Finance Dashboard", layout="wide")
-st.title("📁 Profit by Category")
+st.title("📁 Financial Health Dashboard")
 
-st.markdown("### 📈 Profitability by Product Category")
+st.markdown("### 📊 Financial Summary")
 
 # -------------------------
 # Connect to Database
@@ -17,7 +17,7 @@ conn = get_connection()
 # Load Data
 # -------------------------
 try:
-    products = pd.read_sql("SELECT * FROM product", conn)
+    products = pd.read_sql("SELECT * FROM inventory", conn)
     purchases = pd.read_sql("SELECT * FROM purchases", conn)
     sales = pd.read_sql("SELECT * FROM sales", conn)
 except Exception as e:
@@ -25,20 +25,43 @@ except Exception as e:
     st.exception(e)
     st.stop()
 
-# Debugging: Display tables
-# st.write("🧾 Products Table", products)
-# st.write("🛒 Purchases Table", purchases)
-# st.write("💰 Sales Table", sales)
-
 # -------------------------
-# Merge and Calculate Profit
+# Merge and Financial Metrics
 # -------------------------
 try:
-    # Merge sales and products to get category
+    # Merge sales with product to get cost info
     sales_products = pd.merge(sales, products, on='product_id', how='left')
     purchases_products = pd.merge(purchases, products, on='product_id', how='left')
 
-    # Calculate total revenue and COGS per category
+    # Revenue = selling_price * quantity_sold
+    total_revenue = (sales_products['selling_price'] * sales_products['quantity_sold']).sum()
+
+    # COGS = cost_price * quantity_purchased
+    total_cogs = (purchases_products['cost_price'] * purchases_products['quantity_purchased']).sum()
+
+    # Gross Profit
+    gross_profit = total_revenue - total_cogs
+
+    # Margin %
+    gross_margin_pct = (gross_profit / total_revenue * 100) if total_revenue > 0 else 0
+
+    # Display Summary Metrics
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("💵 Total Revenue", f"₹{total_revenue:,.2f}")
+    col2.metric("💰 COGS", f"₹{total_cogs:,.2f}")
+    col3.metric("📈 Gross Profit", f"₹{gross_profit:,.2f}")
+    col4.metric("📊 Gross Margin %", f"{gross_margin_pct:.2f}%")
+
+except Exception as e:
+    st.error("❌ Failed to compute financial metrics.")
+    st.exception(e)
+
+# -------------------------
+# Profit by Category Chart
+# -------------------------
+st.markdown("### 🧮 Profitability by Product Category")
+
+try:
     revenue_per_category = (
         sales_products
         .groupby('category')
@@ -53,17 +76,14 @@ try:
         .reset_index(name='COGS')
     )
 
-    # Merge and calculate Profit
     profit_df = pd.merge(revenue_per_category, cogs_per_category, on='category', how='outer').fillna(0)
     profit_df['Profit'] = profit_df['Revenue'] - profit_df['COGS']
 
     if profit_df.empty:
-        st.warning("⚠️ No data available to display profitability. Please check sales/purchases.")
+        st.warning("⚠️ No data available to display category-wise profitability.")
     else:
-        # Show summary table
         st.dataframe(profit_df, use_container_width=True)
 
-        # Plotly Chart
         fig = px.bar(
             profit_df,
             x="category",
@@ -76,10 +96,7 @@ try:
         st.plotly_chart(fig, use_container_width=True)
 
 except Exception as e:
-    st.error("❌ Error while calculating or merging data.")
+    st.error("❌ Error in category profitability section.")
     st.exception(e)
 
-# -------------------------
-# Footer Note
-# -------------------------
-st.markdown("🔖 _Data visualized from your sales, purchases, and inventory tables._")
+st.markdown("🔖 _All metrics derived from sales, purchases, and inventory tables._")
