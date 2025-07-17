@@ -7,3 +7,4 @@ sqlalchemy
 pymysql
 streamlit-extras
 streamlit-lottie
+streamlit-authenticator
