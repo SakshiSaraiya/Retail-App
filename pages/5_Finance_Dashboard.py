@@ -64,8 +64,9 @@ try:
     revenue_by_category.columns = ["Category", "Revenue"]
 
     # Merge purchases with product to get category and cost info
-    purchases_with_category = pd.merge(purchases, products[['product_id', 'category']], on='product_id', how='left')
-    cogs_by_category = purchases_with_category.groupby("category")["total_cost"].sum().reset_index()
+    # Use category directly from purchases table
+    purchases["total_cost"] = purchases["quantity_purchased"] * purchases["cost_price"]
+    cogs_by_category = purchases.groupby("category")["total_cost"].sum().reset_index()
     cogs_by_category.columns = ["Category", "COGS"]
 
     # Merge Revenue and COGS
