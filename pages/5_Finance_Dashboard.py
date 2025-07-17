@@ -50,32 +50,44 @@ except Exception as e:
 # -------------------------
 # Profit by Category Chart
 # -------------------------
+import numpy as np
+
 st.subheader("📦 Category-wise Profitability")
 
 try:
-    # Revenue by category from merged sales_products
-    sales_products['total_revenue'] = sales_products['selling_price'] * sales_products['quantity_sold']
-    revenue_by_category = sales_products.groupby("category")["total_revenue"].sum().reset_index()
+    # Merge sales with product to get category and revenue info
+    sales_with_category = pd.merge(sales, purchases[['product_id', 'category']], on='product_id', how='left')
+    revenue_by_category = sales_with_category.groupby("category")["total_amount"].sum().reset_index()
     revenue_by_category.columns = ["Category", "Revenue"]
 
-    # COGS by category from merged purchases_products
-    purchases_products['total_cogs'] = purchases_products['cost_price'] * purchases_products['quantity_purchased']
-    cogs_by_category = purchases_products.groupby("category")["total_cogs"].sum().reset_index()
+    # Merge purchases with product to get category and cost info
+    purchases_with_category = pd.merge(purchases, products[['product_id', 'category']], on='product_id', how='left')
+    cogs_by_category = purchases_with_category.groupby("category")["total_cost"].sum().reset_index()
     cogs_by_category.columns = ["Category", "COGS"]
 
-    # Merge and calculate profitability
+    # Merge Revenue and COGS
     profit_df = pd.merge(revenue_by_category, cogs_by_category, on="Category", how="outer").fillna(0)
     profit_df["Profit"] = profit_df["Revenue"] - profit_df["COGS"]
-    profit_df["Margin (%)"] = round((profit_df["Profit"] / profit_df["Revenue"]) * 100, 2)
+    profit_df["Margin (%)"] = np.where(
+        profit_df["Revenue"] > 0,
+        round((profit_df["Profit"] / profit_df["Revenue"]) * 100, 2),
+        0
+    )
+
+    # Replace infinities or NaNs
     profit_df["Margin (%)"] = profit_df["Margin (%)"].replace([np.inf, -np.inf], 0).fillna(0)
 
-    st.dataframe(profit_df.style.format({
-        "Revenue": "₹{:,.2f}", 
-        "COGS": "₹{:,.2f}", 
-        "Profit": "₹{:,.2f}", 
-        "Margin (%)": "{:.2f}%"
-    }))
+    # Display
+    st.dataframe(
+        profit_df.style.format({
+            "Revenue": "₹{:,.2f}",
+            "COGS": "₹{:,.2f}",
+            "Profit": "₹{:,.2f}",
+            "Margin (%)": "{:.2f}%"
+        })
+    )
 
+    # Optional: Plot
     fig = px.bar(
         profit_df,
         x="Category",
