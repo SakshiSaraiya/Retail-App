@@ -149,3 +149,48 @@ except Exception as e:
     st.error("❌ Error calculating inventory holding cost or DIO.")
     st.exception(e)
 
+# -------------------------
+# Supplier Payment Simulation
+# -------------------------
+st.subheader("🤝 Supplier Payment Simulation")
+
+try:
+    if 'purchase_date' not in purchases.columns:
+        st.warning("⚠️ 'purchase_date' column not found in purchases table.")
+    else:
+        purchases['purchase_date'] = pd.to_datetime(purchases['purchase_date'])
+
+        # Payment Terms Slider
+        payment_days = st.slider("📆 Simulate Supplier Payment Terms (in days)", 0, 120, 30, step=5)
+
+        # Today's date
+        today = pd.to_datetime("today")
+
+        # Add due_date and check if overdue
+        purchases['due_date'] = purchases['purchase_date'] + pd.to_timedelta(payment_days, unit='D')
+        purchases['outstanding_amount'] = purchases['quantity_purchased'] * purchases['cost_price']
+        purchases['status'] = np.where(purchases['due_date'] < today, "Overdue", "Pending")
+
+        # Metrics
+        total_outstanding = purchases['outstanding_amount'].sum()
+        overdue_amount = purchases[purchases['status'] == "Overdue"]['outstanding_amount'].sum()
+        pending_amount = purchases[purchases['status'] == "Pending"]['outstanding_amount'].sum()
+
+        # Display Metrics
+        col1, col2, col3 = st.columns(3)
+        col1.metric("💸 Total Payable (Simulated)", f"₹{total_outstanding:,.2f}")
+        col2.metric("⚠️ Overdue Amount", f"₹{overdue_amount:,.2f}")
+        col3.metric("⏳ Pending (Not Yet Due)", f"₹{pending_amount:,.2f}")
+
+        # Optional: Visual
+        fig = px.pie(
+            purchases,
+            names='status',
+            values='outstanding_amount',
+            title='💰 Payable Breakdown by Status'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+except Exception as e:
+    st.error("❌ Error in Supplier Payment Simulation section.")
+    st.exception(e)
