@@ -209,74 +209,70 @@ with tab3:
     st.plotly_chart(fig5, use_container_width=True)
 
 # -------------------------
-# Forecasting Section (Updated for your schema)
+# 🔮 Forecasting Sales by Product
 # -------------------------
-from prophet import Prophet
-from prophet.plot import plot_plotly
-
 st.markdown("---")
-st.markdown("### 🔮 Product-Level Sales Forecasting")
+st.markdown("### 🔮 Sales Forecast by Product")
 
-# Merge sales with purchases to get product_name (from purchases table)
-sales_forecast = sales.copy()
-sales_forecast['product_id'] = sales_forecast['product_id'].astype(str).str.strip().str.upper()
-purchases['product_id'] = purchases['product_id'].astype(str).str.strip().str.upper()
+# Merge product_name from purchases into sales for dropdown
+sales_forecast = pd.merge(
+    sales,
+    purchases[['product_id', 'product_name']],
+    on='product_id',
+    how='left'
+)
 
-# Bring in product_name from purchases table
-sales_forecast = pd.merge(sales_forecast, purchases[['product_id', 'product_name']], on='product_id', how='left', suffixes=('', '_purchases'))
-sales_forecast['product_name'] = sales_forecast['product_name'].fillna(sales_forecast['product_name_purchases'])
+# Check and clean dates
+sales_forecast['sales_date'] = pd.to_datetime(sales_forecast['sales_date'], errors='coerce')
 
-# Drop if product name is still missing
-sales_forecast.dropna(subset=['product_name'], inplace=True)
+# Let user select product
+available_products = sales_forecast['product_name'].dropna().unique()
+selected_product = st.selectbox("Select Product for Forecast", sorted(available_products))
 
-# Forecasting UI
-forecast_products = sales_forecast['product_name'].dropna().unique()
-selected_forecast_product = st.selectbox("Select a Product to Forecast", sorted(forecast_products))
+# Filter sales for selected product
+product_sales = sales_forecast[sales_forecast['product_name'] == selected_product].copy()
 
-# Filter data
-product_sales = sales_forecast[sales_forecast['product_name'] == selected_forecast_product].copy()
+# Group monthly sales
+product_sales['month'] = product_sales['sales_date'].dt.to_period('M').astype(str)
+monthly_sales = product_sales.groupby('month')['quantity_sold'].sum().reset_index()
+monthly_sales['month'] = pd.to_datetime(monthly_sales['month'])
+monthly_sales = monthly_sales.sort_values('month')
 
-# Check for empty or invalid data
-if product_sales.empty:
-    st.warning("⚠️ No sales data available for the selected product.")
-else:
-    product_sales['sales_date'] = pd.to_datetime(product_sales['sales_date'])
+# Calculate 3-month moving average as forecast
+monthly_sales['forecast_qty'] = monthly_sales['quantity_sold'].rolling(window=3, min_periods=1).mean()
 
-    # Group daily sales for Prophet
-    daily_sales = (
-        product_sales
-        .groupby('sales_date')['quantity_sold']
-        .sum()
-        .reset_index()
-        .rename(columns={'sales_date': 'ds', 'quantity_sold': 'y'})
-    )
+# Forecast next 3 months with last moving average value
+last_month = monthly_sales['month'].max()
+forecast_months = pd.date_range(start=last_month + pd.offsets.MonthBegin(), periods=3, freq='MS')
+last_forecast = monthly_sales['forecast_qty'].iloc[-1]
 
-    if len(daily_sales) < 2:
-        st.warning("⚠️ Not enough data to generate a forecast.")
-    else:
-        forecast_period = st.slider("Forecast Horizon (days)", 7, 90, 30)
+future_forecast = pd.DataFrame({
+    'month': forecast_months,
+    'quantity_sold': [None]*3,
+    'forecast_qty': [last_forecast]*3
+})
 
-        # Fit Prophet model
-        model = Prophet()
-        model.fit(daily_sales)
+# Combine past + future
+forecast_df = pd.concat([monthly_sales, future_forecast], ignore_index=True)
 
-        # Predict future
-        future = model.make_future_dataframe(periods=forecast_period)
-        forecast = model.predict(future)
+# Plotting
+fig = px.line(
+    forecast_df,
+    x='month',
+    y='forecast_qty',
+    title=f"📈 Forecasted Sales for '{selected_product}'",
+    labels={'forecast_qty': 'Forecasted Quantity'},
+    markers=True,
+    template='plotly_dark'
+)
 
-        # Plot forecast
-        st.subheader(f"📈 Forecast for {selected_forecast_product} (Next {forecast_period} days)")
-        fig = plot_plotly(model, forecast)
-        st.plotly_chart(fig, use_container_width=True)
+# Add actual sales line
+fig.add_scatter(
+    x=monthly_sales['month'],
+    y=monthly_sales['quantity_sold'],
+    mode='lines+markers',
+    name='Actual Quantity',
+    line=dict(color='orange')
+)
 
-        if st.checkbox("Show Forecast Table"):
-            st.dataframe(
-                forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].tail(forecast_period).rename(columns={
-                    'ds': 'Date',
-                    'yhat': 'Forecasted Sales',
-                    'yhat_lower': 'Lower Bound',
-                    'yhat_upper': 'Upper Bound'
-                }),
-                use_container_width=True
-            )
-
+st.plotly_chart(fig, use_container_width=True)
