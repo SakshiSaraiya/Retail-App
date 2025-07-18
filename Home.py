@@ -55,6 +55,13 @@ st.markdown("""
         flex-direction: column;
         justify-content: space-between;
         height: 180px;
+        text-decoration: none;
+        transition: 0.2s ease-in-out;
+    }
+
+    .feature-card:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
     }
 
     .section-title {
@@ -103,26 +110,24 @@ with col3:
         </div>
     """, unsafe_allow_html=True)
 
-# --- Quick Access with Buttons ---
+# --- Quick Access (clickable cards) ---
 st.markdown("<div class='section-title'>Quick Access</div>", unsafe_allow_html=True)
 col4, col5 = st.columns(2)
 with col4:
     st.markdown("""
-        <div class='feature-card'>
-            <h4>Upload New Data</h4>
+        <a href="/pages/0_upload_data" target="_self" class='feature-card'>
+            <h4>📤 Upload New Data</h4>
             <p>Quickly upload product, purchase, or sales records.</p>
-        </div>
+        </a>
     """, unsafe_allow_html=True)
-    st.page_link("pages/0_upload_data.py", label="📤 Go to Upload Page", icon="📤")
 
 with col5:
     st.markdown("""
-        <div class='feature-card'>
-            <h4>View Financial Dashboard</h4>
+        <a href="/pages/5_Finance_Dashboard" target="_self" class='feature-card'>
+            <h4>📊 View Financial Dashboard</h4>
             <p>Analyze revenue, expenses, and overall business health.</p>
-        </div>
+        </a>
     """, unsafe_allow_html=True)
-    st.page_link("pages/4_Sales.py", label="📈 Open Financial Dashboard", icon="📈")
 
 # --- Platform Capabilities ---
 st.markdown("<div class='section-title'>Platform Capabilities</div>", unsafe_allow_html=True)
