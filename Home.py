@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_extras.switch_page_button import switch_page
 
 # --- Page Config ---
 st.set_page_config(
@@ -21,15 +22,27 @@ st.markdown("""
         color: #F1F5F9 !important;
     }
 
-    /* Hover effects */
     .css-1d391kg:hover {
         color: #38BDF8 !important;
     }
 
-    /* Light background */
     .block-container {
         background-color: #F8FAFC;
         padding-top: 2rem;
+    }
+
+    /* Heading and Subheading */
+    h1 {
+        color: #0F172A !important;
+        font-weight: 900;
+        font-size: 2.4rem !important;
+        margin-bottom: 0.4rem;
+    }
+
+    .subheading {
+        font-size: 1.05rem;
+        color: #475569;
+        margin-bottom: 2rem;
     }
 
     /* Cards */
@@ -37,18 +50,12 @@ st.markdown("""
         background-color: #FFFFFF;
         padding: 1.5rem;
         border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        margin-bottom: 1rem;
-        height: 100%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
         color: #1E293B;
-    }
-
-    /* Headers */
-    h1 {
-        color: #0F172A !important;
-        font-weight: 900 !important;
-        font-size: 2.3rem !important;
-        margin-bottom: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 160px;
     }
 
     .section-title {
@@ -58,21 +65,19 @@ st.markdown("""
         margin: 2rem 0 1rem;
     }
 
-    /* List styling */
     .platform-list li {
         padding: 0.3rem 0;
         font-size: 0.95rem;
         color: #334155;
     }
 
-    /* Hide header */
     header {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
-# --- Page Content ---
+# --- Header ---
 st.markdown("<h1>Welcome to All-in-One Retail Management</h1>", unsafe_allow_html=True)
-st.write("Your centralized platform for inventory, finance, and vendor performance insights.")
+st.markdown("<div class='subheading'>Your centralized platform for inventory, finance, and vendor performance insights.</div>", unsafe_allow_html=True)
 
 # --- Key Features ---
 st.markdown("<div class='section-title'>Key Features</div>", unsafe_allow_html=True)
@@ -99,7 +104,7 @@ with col3:
         </div>
     """, unsafe_allow_html=True)
 
-# --- Quick Access with Navigation Buttons ---
+# --- Quick Access with Buttons ---
 st.markdown("<div class='section-title'>Quick Access</div>", unsafe_allow_html=True)
 col4, col5 = st.columns(2)
 with col4:
@@ -109,7 +114,8 @@ with col4:
             <p>Quickly upload product, purchase, or sales records.</p>
         </div>
     """, unsafe_allow_html=True)
-    st.page_link("pages/0_upload_data.py", label="Go to Upload Page", icon="📤")
+    if st.button("📤 Go to Upload Page"):
+        switch_page("upload data")
 
 with col5:
     st.markdown("""
@@ -118,7 +124,8 @@ with col5:
             <p>Analyze revenue, expenses, and overall business health.</p>
         </div>
     """, unsafe_allow_html=True)
-    st.page_link("pages/Finance Dashboard.py", label="Open Dashboard", icon="📈")
+    if st.button("📈 Open Financial Dashboard"):
+        switch_page("finance dashboard")
 
 # --- Platform Capabilities ---
 st.markdown("<div class='section-title'>Platform Capabilities</div>", unsafe_allow_html=True)
