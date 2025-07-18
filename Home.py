@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_extras.switch_page_button import switch_page
 
 # --- Page Config ---
 st.set_page_config(
@@ -55,7 +54,7 @@ st.markdown("""
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        height: 160px;
+        height: 180px;
     }
 
     .section-title {
@@ -114,7 +113,7 @@ with col4:
             <p>Quickly upload product, purchase, or sales records.</p>
         </div>
     """, unsafe_allow_html=True)
-   st.page_link("pages/0_upload_data.py", label="📤 Go to Upload Page", icon="📤")
+    st.page_link("pages/0_upload_data.py", label="📤 Go to Upload Page", icon="📤")
 
 with col5:
     st.markdown("""
