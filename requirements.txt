@@ -8,3 +8,4 @@ pymysql
 streamlit-extras
 streamlit-lottie
 streamlit-authenticator
+prophet
