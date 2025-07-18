@@ -10,7 +10,7 @@ st.set_page_config(
 # --- Custom CSS ---
 st.markdown("""
     <style>
-    /* Sidebar Styling */
+    /* Dark Sidebar */
     [data-testid="stSidebar"] {
         background-color: #0F172A;
     }
@@ -18,12 +18,18 @@ st.markdown("""
     [data-testid="stSidebar"] .css-1d391kg,
     [data-testid="stSidebar"] .css-1v3fvcr,
     [data-testid="stSidebar"] .css-qri22k {
-        color: #E2E8F0 !important;
+        color: #F1F5F9 !important;
     }
 
-    /* Sidebar menu item hover */
+    /* Hover and active menu items */
     .css-1d391kg:hover {
         color: #38BDF8 !important;
+    }
+
+    /* Light Background for Main Area */
+    .block-container {
+        background-color: #F8FAFC;
+        padding-top: 2rem;
     }
 
     /* Card Styling */
@@ -34,9 +40,10 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         margin-bottom: 1rem;
         height: 100%;
+        color: #1E293B;
     }
 
-    /* Title and Section Headers */
+    /* Section Titles and Headings */
     h1, h2 {
         color: #0F172A;
         font-weight: 800;
@@ -49,18 +56,18 @@ st.markdown("""
         margin: 2rem 0 1rem;
     }
 
-    /* List Styling */
+    /* Feature list */
     .platform-list li {
         padding: 0.3rem 0;
         font-size: 0.95rem;
         color: #334155;
     }
 
-    /* General Reset */
+    /* Hide Streamlit's default header */
     header {visibility: hidden;}
-    .block-container {padding-top: 2rem;}
     </style>
 """, unsafe_allow_html=True)
+
 
 # --- Welcome Section ---
 st.markdown("<h1>Welcome to All-in-One Retail Management</h1>", unsafe_allow_html=True)
