@@ -1,121 +1,129 @@
 import streamlit as st
+from streamlit_lottie import st_lottie
+import requests
 
-# -------------------------------
-# Page Configuration
-# -------------------------------
+# Config
 st.set_page_config(
     page_title="Retail Compass",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Optional: Custom CSS to improve sidebar and fonts
+# Lottie Animations
+def load_lottieurl(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
+retail_lottie = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_9cyyl8i4.json")
+
+# Styling
 st.markdown("""
     <style>
-        /* Sidebar styling */
-        .css-6qob1r.eczjsme4 {
-            background-color: #2c2f33;
-        }
-        .css-1d391kg {
-            color: white;
-        }
-
-        /* Main title */
-        h1 {
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 42px;
-            font-weight: bold;
-        }
-
-        /* Bullet list spacing */
-        ul {
-            padding-left: 20px;
-            line-height: 1.6;
-        }
-
-        /* Button styling */
-        .stButton > button {
-            background-color: #4B6CB7;
-            color: white;
-            font-size: 16px;
-            padding: 0.6em 2em;
-            border-radius: 10px;
-            border: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .stButton > button:hover {
-            background-color: #3c5799;
-        }
+    .stApp {
+        background: linear-gradient(to bottom right, #f5f7fa, #e4ecf7);
+        color: #1f2937;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    h1, h2, h3, h4 {
+        color: #102a43;
+        font-weight: 700;
+    }
+    .feature-card {
+        background-color: #ffffff;
+        padding: 1.75rem;
+        border-radius: 12px;
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+        text-align: left;
+        transition: transform 0.2s ease;
+        border: 1px solid #d9e2ec;
+    }
+    .feature-card:hover {
+        transform: translateY(-3px);
+    }
+    .footer {
+        text-align: center;
+        font-size: 13px;
+        color: #486581;
+        margin-top: 40px;
+    }
+    .cta-button {
+        margin-top: 12px;
+    }
+    .highlight-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    .highlight-text {
+        font-size: 14px;
+        color: #334e68;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# -------------------------------
-# Main Title & Subtitle
-# -------------------------------
+# --- Title ---
 st.markdown("<h1 style='text-align:center;'>Retail Compass</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; font-size:18px;'>A unified platform to manage inventory, sales, and finances efficiently.</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center;font-size:18px;'>A unified platform to manage inventory, sales, and finances efficiently.</p>", unsafe_allow_html=True)
 
-# -------------------------------
-# Feature Cards (3 columns)
-# -------------------------------
-st.markdown("<br>", unsafe_allow_html=True)
-card_container = st.columns(3)
+st.divider()
 
-with card_container[0]:
+# --- Feature Highlights ---
+st.markdown("### Key Features")
+col1, col2, col3 = st.columns(3)
+
+with col1:
     st.markdown("""
-        <div style="background-color:#ffffff; color:#000000; padding:20px; border-radius:15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align:center;">
-            <h4>Inventory Overview</h4>
-            <p style='font-size:14px;'>Monitor stock levels & categorize efficiently.</p>
-        </div>
+    <div class='feature-card'>
+        <div class='highlight-title'>Inventory Overview</div>
+        <div class='highlight-text'>Monitor stock levels and categorize efficiently.</div>
+    </div>
     """, unsafe_allow_html=True)
 
-with card_container[1]:
+with col2:
     st.markdown("""
-        <div style="background-color:#ffffff; color:#000000; padding:20px; border-radius:15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align:center;">
-            <h4>Sales Highlights</h4>
-            <p style='font-size:14px;'>Track trends, products & profits with clarity.</p>
-        </div>
+    <div class='feature-card'>
+        <div class='highlight-title'>Sales Highlights</div>
+        <div class='highlight-text'>Track product trends, sales patterns, and profitability.</div>
+    </div>
     """, unsafe_allow_html=True)
 
-with card_container[2]:
+with col3:
     st.markdown("""
-        <div style="background-color:#ffffff; color:#000000; padding:20px; border-radius:15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align:center;">
-            <h4>Smart Suggestions</h4>
-            <p style='font-size:14px;'>Automate reorder points & avoid stockouts.</p>
-        </div>
+    <div class='feature-card'>
+        <div class='highlight-title'>Smart Inventory Suggestions</div>
+        <div class='highlight-text'>Automate reorder points and reduce stockouts.</div>
+    </div>
     """, unsafe_allow_html=True)
 
-# -------------------------------
-# Capabilities Section
-# -------------------------------
-st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown("""
-    <h3>Platform Capabilities</h3>
-    <ul style="font-size:16px;">
-        <li>Inventory Management</li>
-        <li>Sales Analysis and Forecasting</li>
-        <li>Purchase & Vendor Tracking</li>
-        <li>Financial Dashboards</li>
-        <li>Expense Categorization and Reporting</li>
-    </ul>
-""", unsafe_allow_html=True)
+st.divider()
 
-# -------------------------------
-# Navigation Buttons
-# -------------------------------
-st.markdown("<br>", unsafe_allow_html=True)
-btn_col1, btn_col2 = st.columns(2)
+# --- Platform Capabilities & Lottie ---
+left, right = st.columns([1.2, 1])
 
-with btn_col1:
-    if st.button("📤 Upload Data"):
-        st.switch_page("pages/0_upload_data.py")  # adjust path if needed
+with left:
+    st.markdown("### Platform Capabilities")
+    st.markdown("""
+    - Inventory Management  
+    - Sales Analysis and Forecasting  
+    - Purchase and Vendor Tracking  
+    - Financial Dashboards  
+    - Expense Categorization and Reporting  
+    """)
 
-with btn_col2:
-    if st.button("📊 View Inventory"):
-        st.switch_page("pages/2_Inventory.py")  # adjust path if needed
+    st.markdown("#### Quick Navigation")
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("Upload Data"):
+            st.switch_page("pages/0_upload_data.py")
+    with col_btn2:
+        if st.button("View Inventory"):
+            st.switch_page("pages/1_Home.py")
 
-# -------------------------------
-# Optional Image (commented)
-# -------------------------------
-# st.image("images/retail_dashboard.png", use_column_width=True)
+with right:
+    if retail_lottie:
+        st_lottie(retail_lottie, height=260)
 
+# --- Footer ---
+st.markdown("<div class='footer'>© 2025 Retail Compass — Developed by Sakshi Saraiya & Chirag Thakkar</div>", unsafe_allow_html=True)
