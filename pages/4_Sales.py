@@ -223,7 +223,7 @@ sales_forecast['product_id'] = sales_forecast['product_id'].astype(str).str.stri
 purchases['product_id'] = purchases['product_id'].astype(str).str.strip().str.upper()
 
 # Bring in product_name from purchases table
-sales_forecast = pd.merge(sales_forecast, purchases[['product_id', 'product_name_purchases']], on='product_id', how='left')
+sales_forecast = pd.merge(sales_forecast, purchases[['product_id', 'product_name']], on='product_id', how='left', suffixes=('', '_purchases'))
 sales_forecast['product_name'] = sales_forecast['product_name'].fillna(sales_forecast['product_name_purchases'])
 
 # Drop if product name is still missing
