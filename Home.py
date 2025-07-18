@@ -7,10 +7,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- Custom CSS ---
+# --- CSS Styling ---
 st.markdown("""
     <style>
-    /* Dark Sidebar */
+    /* Sidebar */
     [data-testid="stSidebar"] {
         background-color: #0F172A;
     }
@@ -21,18 +21,18 @@ st.markdown("""
         color: #F1F5F9 !important;
     }
 
-    /* Hover and active menu items */
+    /* Hover effects */
     .css-1d391kg:hover {
         color: #38BDF8 !important;
     }
 
-    /* Light Background for Main Area */
+    /* Light background */
     .block-container {
         background-color: #F8FAFC;
         padding-top: 2rem;
     }
 
-    /* Card Styling */
+    /* Cards */
     .feature-card {
         background-color: #FFFFFF;
         padding: 1.5rem;
@@ -43,10 +43,12 @@ st.markdown("""
         color: #1E293B;
     }
 
-    /* Section Titles and Headings */
-    h1, h2 {
-        color: #0F172A;
-        font-weight: 800;
+    /* Headers */
+    h1 {
+        color: #0F172A !important;
+        font-weight: 900 !important;
+        font-size: 2.3rem !important;
+        margin-bottom: 0.5rem;
     }
 
     .section-title {
@@ -56,24 +58,23 @@ st.markdown("""
         margin: 2rem 0 1rem;
     }
 
-    /* Feature list */
+    /* List styling */
     .platform-list li {
         padding: 0.3rem 0;
         font-size: 0.95rem;
         color: #334155;
     }
 
-    /* Hide Streamlit's default header */
+    /* Hide header */
     header {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
-
-# --- Welcome Section ---
+# --- Page Content ---
 st.markdown("<h1>Welcome to All-in-One Retail Management</h1>", unsafe_allow_html=True)
 st.write("Your centralized platform for inventory, finance, and vendor performance insights.")
 
-# --- Key Features Section ---
+# --- Key Features ---
 st.markdown("<div class='section-title'>Key Features</div>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -98,25 +99,28 @@ with col3:
         </div>
     """, unsafe_allow_html=True)
 
-# --- Quick Access Section ---
+# --- Quick Access with Navigation Buttons ---
 st.markdown("<div class='section-title'>Quick Access</div>", unsafe_allow_html=True)
 col4, col5 = st.columns(2)
 with col4:
     st.markdown("""
         <div class='feature-card'>
-            <h4>View Sales Dashboard</h4>
-            <p>Drill down into product-wise sales and regional performance.</p>
+            <h4>Upload New Data</h4>
+            <p>Quickly upload product, purchase, or sales records.</p>
         </div>
     """, unsafe_allow_html=True)
+    st.page_link("pages/0_upload_data.py", label="Go to Upload Page", icon="📤")
+
 with col5:
     st.markdown("""
         <div class='feature-card'>
-            <h4>Manage Expenses</h4>
-            <p>Compare fixed and variable expenses and track cash flow.</p>
+            <h4>View Financial Dashboard</h4>
+            <p>Analyze revenue, expenses, and overall business health.</p>
         </div>
     """, unsafe_allow_html=True)
+    st.page_link("pages/Finance Dashboard.py", label="Open Dashboard", icon="📈")
 
-# --- Capabilities Section ---
+# --- Platform Capabilities ---
 st.markdown("<div class='section-title'>Platform Capabilities</div>", unsafe_allow_html=True)
 st.markdown("""
 <ul class='platform-list'>
