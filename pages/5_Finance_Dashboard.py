@@ -155,10 +155,10 @@ except Exception as e:
 st.subheader("🤝 Supplier Payment Simulation")
 
 try:
-    if 'purchase_date' not in purchases.columns:
-        st.warning("⚠️ 'purchase_date' column not found in purchases table.")
+    if 'order_date' not in purchases.columns:
+        st.warning("⚠️ 'order_date' column not found in purchases table.")
     else:
-        purchases['purchase_date'] = pd.to_datetime(purchases['purchase_date'])
+        purchases['order_date'] = pd.to_datetime(purchases['order_date'])
 
         # Payment Terms Slider
         payment_days = st.slider("📆 Simulate Supplier Payment Terms (in days)", 0, 120, 30, step=5)
@@ -167,7 +167,7 @@ try:
         today = pd.to_datetime("today")
 
         # Add due_date and check if overdue
-        purchases['due_date'] = purchases['purchase_date'] + pd.to_timedelta(payment_days, unit='D')
+        purchases['due_date'] = purchases['order_date'] + pd.to_timedelta(payment_days, unit='D')
         purchases['outstanding_amount'] = purchases['quantity_purchased'] * purchases['cost_price']
         purchases['status'] = np.where(purchases['due_date'] < today, "Overdue", "Pending")
 
