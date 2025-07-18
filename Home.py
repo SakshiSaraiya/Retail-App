@@ -114,8 +114,7 @@ with col4:
             <p>Quickly upload product, purchase, or sales records.</p>
         </div>
     """, unsafe_allow_html=True)
-    if st.button("📤 Go to Upload Page"):
-        switch_page("upload data")
+   st.page_link("pages/0_upload_data.py", label="📤 Go to Upload Page", icon="📤")
 
 with col5:
     st.markdown("""
@@ -124,8 +123,7 @@ with col5:
             <p>Analyze revenue, expenses, and overall business health.</p>
         </div>
     """, unsafe_allow_html=True)
-    if st.button("📈 Open Financial Dashboard"):
-        switch_page("finance dashboard")
+    st.page_link("pages/4_Sales.py", label="📈 Open Financial Dashboard", icon="📈")
 
 # --- Platform Capabilities ---
 st.markdown("<div class='section-title'>Platform Capabilities</div>", unsafe_allow_html=True)
