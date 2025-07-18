@@ -34,118 +34,96 @@ st.markdown("""
         margin: 2rem 0 1rem;
     }
 
-    .card {
-        background-color: #FFFFFF;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-        margin-bottom: 2rem;
-    }
-
-    .stFileUploader label, .stTextInput label, .stNumberInput label,
-    .stSelectbox label, .stDateInput label {
-        font-weight: 600;
-        color: #334155;
+    .stExpander {
+        background-color: #ffffff;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        padding: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        margin-bottom: 1.5rem;
     }
 
     .stButton>button {
         background-color: #0F172A;
         color: white;
         font-weight: 600;
-        border-radius: 8px;
+        border-radius: 6px;
         padding: 0.5rem 1.2rem;
     }
 
     .stButton>button:hover {
         background-color: #1E293B;
-        color: white;
-    }
-
-    .stExpanderHeader {
-        font-weight: 600;
-        color: #1E293B;
-    }
-
-    .stTextInput input, .stNumberInput input, .stSelectbox, .stDateInput input {
-        background-color: #ffffff !important;
-        color: #0F172A !important;
-        border-radius: 6px;
     }
 
     header {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
-# --- Title ---
 st.markdown("<h1>Upload or Add Inventory Data</h1>", unsafe_allow_html=True)
 
-# --- DB Connection ---
 conn = get_connection()
 if conn is None:
     st.stop()
 
 cursor = conn.cursor()
 
-# --- Upload CSV Section ---
+# --- Upload CSV Files Section ---
 st.markdown("<div class='section-title'>Upload CSV Files</div>", unsafe_allow_html=True)
 
-with st.container():
-    product_file = st.file_uploader("Upload Product CSV", type=["csv"])
-    if product_file:
-        df = pd.read_csv(product_file)
-        for _, row in df.iterrows():
-            try:
-                cursor.execute("""
-                    INSERT INTO product (product_id, product_name, category, stock)
-                    VALUES (%s, %s, %s, %s)
-                """, (row['product_id'], row['product_name'], row['category'], row['stock']))
-            except Exception as e:
-                st.warning("Skipped a row due to error: " + str(e))
-        conn.commit()
-        st.success("Product data uploaded successfully!")
+product_file = st.file_uploader("Upload Product CSV", type=["csv"])
+if product_file:
+    df = pd.read_csv(product_file)
+    for _, row in df.iterrows():
+        try:
+            cursor.execute("""
+                INSERT INTO product (product_id, product_name, category, stock)
+                VALUES (%s, %s, %s, %s)
+            """, (row['product_id'], row['product_name'], row['category'], row['stock']))
+        except Exception as e:
+            st.warning(f"Skipped a row due to error: {e}")
+    conn.commit()
+    st.success("Product data uploaded successfully!")
 
-    purchase_file = st.file_uploader("Upload Purchase CSV", type=["csv"])
-    if purchase_file:
-        df = pd.read_csv(purchase_file)
-        for _, row in df.iterrows():
-            try:
-                cursor.execute("""
-                    INSERT INTO purchases (product_id, product_name, category, vendor_name, order_date,
-                        quantity_purchased, cost_price, payment_due_date, payment_status)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (row['product_id'], row['product_name'], row['category'], row['vendor_name'],
-                      row['order_date'], row['quantity_purchased'], row['cost_price'],
-                      row['payment_due_date'], row['payment_status']))
-            except Exception as e:
-                st.warning("Skipped a row due to error: " + str(e))
-        conn.commit()
-        st.success("Purchase data uploaded successfully!")
+purchase_file = st.file_uploader("Upload Purchase CSV", type=["csv"])
+if purchase_file:
+    df = pd.read_csv(purchase_file)
+    for _, row in df.iterrows():
+        try:
+            cursor.execute("""
+                INSERT INTO purchases (product_id, product_name, category, vendor_name, order_date,
+                    quantity_purchased, cost_price, payment_due_date, payment_status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (row['product_id'], row['product_name'], row['category'], row['vendor_name'],
+                  row['order_date'], row['quantity_purchased'], row['cost_price'],
+                  row['payment_due_date'], row['payment_status']))
+        except Exception as e:
+            st.warning(f"Skipped a row due to error: {e}")
+    conn.commit()
+    st.success("Purchase data uploaded successfully!")
 
-    sales_file = st.file_uploader("Upload Sales CSV", type=["csv"])
-    if sales_file:
-        df = pd.read_csv(sales_file)
-        for _, row in df.iterrows():
-            try:
-                cursor.execute("""
-                    INSERT INTO sales (sale_id, product_id, selling_price, quantity_sold, sales_date,
-                        shipped_status, payment_status)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                """, (row['sale_id'], row['product_id'], row['selling_price'], row['quantity_sold'],
-                      row['sales_date'], row['shipped_status'], row['payment_status']))
-            except Exception as e:
-                st.warning("Skipped a row due to error: " + str(e))
-        conn.commit()
-        st.success("Sales data uploaded successfully!")
+sales_file = st.file_uploader("Upload Sales CSV", type=["csv"])
+if sales_file:
+    df = pd.read_csv(sales_file)
+    for _, row in df.iterrows():
+        try:
+            cursor.execute("""
+                INSERT INTO sales (sale_id, product_id, selling_price, quantity_sold, sales_date,
+                    shipped_status, payment_status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (row['sale_id'], row['product_id'], row['selling_price'], row['quantity_sold'],
+                  row['sales_date'], row['shipped_status'], row['payment_status']))
+        except Exception as e:
+            st.warning(f"Skipped a row due to error: {e}")
+    conn.commit()
+    st.success("Sales data uploaded successfully!")
 
-# --- Manual Entry Section ---
+# --- Add Manually ---
 st.markdown("<div class='section-title'>Add Data Manually</div>", unsafe_allow_html=True)
 
 # --- Add Purchase ---
-with st.container():
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.subheader("Add New Purchase")
+with st.expander("➕ Add New Purchase", expanded=False):
     with st.form("add_purchase_form"):
-        product_id = st.text_input("Product ID (existing or new)")
+        product_id = st.text_input("Product ID")
         product_name = st.text_input("Product Name")
         category = st.text_input("Category")
         vendor_name = st.text_input("Vendor Name")
@@ -155,7 +133,6 @@ with st.container():
         payment_due_date = st.date_input("Payment Due Date")
         payment_status = st.selectbox("Payment Status", ["Pending", "Paid", "Overdue"])
         submit = st.form_submit_button("Add Purchase")
-
         if submit:
             try:
                 cursor.execute("""
@@ -169,19 +146,15 @@ with st.container():
             except Exception as e:
                 st.error("Error inserting purchase.")
                 st.code(str(e))
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Add Product ---
-with st.container():
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.subheader("Add New Product")
+with st.expander("➕ Add New Product", expanded=False):
     with st.form("add_product_form"):
         product_id = st.text_input("Product ID")
         product_name = st.text_input("Product Name")
         category = st.text_input("Category")
         stock = st.number_input("Stock Quantity", min_value=0)
         submit = st.form_submit_button("Add Product")
-
         if submit:
             try:
                 cursor.execute("SELECT 1 FROM product WHERE product_id = %s", (product_id,))
@@ -197,12 +170,9 @@ with st.container():
             except Exception as e:
                 st.error("Error inserting product.")
                 st.code(str(e))
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- Add Sale ---
-with st.container():
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.subheader("Add New Sale")
+with st.expander("➕ Add New Sale", expanded=False):
     with st.form("add_sale_form"):
         sale_id = st.number_input("Sale ID", min_value=1)
         product_id = st.text_input("Product ID")
@@ -212,7 +182,6 @@ with st.container():
         shipped_status = st.selectbox("Shipped Status", ["Shipped", "Pending", "Cancelled"])
         payment_status = st.selectbox("Payment Status", ["Received", "Pending"])
         submit = st.form_submit_button("Add Sale")
-
         if submit:
             try:
                 cursor.execute("SELECT 1 FROM sales WHERE sale_id = %s", (sale_id,))
@@ -230,4 +199,3 @@ with st.container():
             except Exception as e:
                 st.error("Error inserting sale.")
                 st.code(str(e))
-    st.markdown("</div>", unsafe_allow_html=True)
