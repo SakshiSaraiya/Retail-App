@@ -27,21 +27,25 @@ st.markdown("""
     .metric-card {
         background-color: #1E293B;
         color: #FFFFFF;
-        padding: 1rem;
-        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
         box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         text-align: center;
         margin-bottom: 1rem;
+        height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     .metric-card h4 {
-        font-size: 1.1rem;
+        font-size: 1rem;
         margin: 0;
         color: #CBD5E1;
     }
     .metric-card h2 {
-        font-size: 2.2rem;
+        font-size: 1.6rem;
         margin: 0;
-        font-weight: 800;
+        font-weight: 700;
         color: #FACC15;
     }
     h1, h2, h3, h4, h5, h6, p {
@@ -52,9 +56,10 @@ st.markdown("""
         color: #1F2937;
     }
     .dataframe thead th {
-        background-color: #E2E8F0;
+        background-color: #1E293B;
         font-weight: bold;
-        color: #1E293B;
+        color: #FFFFFF;
+        font-size: 0.95rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -151,6 +156,7 @@ available_cols = [col for col in expected_cols if col in filtered.columns]
 st.dataframe(filtered[available_cols], use_container_width=True)
 
 # Next sections (charts and alerts) can be upgraded similarly
+
 
 
 # ---------- Payment Alerts ----------
