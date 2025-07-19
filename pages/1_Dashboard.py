@@ -1,4 +1,4 @@
-# 📊 Retail Dashboard - Professionally Styled & Enhanced  
+# 📊 Retail Dashboard - Professionally Styled & Enhanced
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -35,18 +35,40 @@ st.markdown(
             font-weight: 500 !important;
         }}
 
+        .card {{
+            background-color: {CARD_BG};
+            border-radius: 1rem;
+            padding: 1.25rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            margin-bottom: 1rem;
+            text-align: center;
+        }}
+
+        .card h4 {{
+            margin: 0;
+            font-size: 0.95rem;
+            color: #64748B;
+        }}
+
+        .card h2 {{
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #0F172A;
+        }}
+
         .highlight-box {{
-            background-color: {HIGHLIGHT_BG};
+            background-color: #1E293B;
             color: white;
-            padding: 0.9rem 1rem;
+            padding: 1.1rem 1.5rem;
             border-radius: 1rem;
             font-weight: 500;
-            font-size: 1.05rem;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+            font-size: 1.1rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
         }}
 
         .highlight-box b {{
@@ -59,10 +81,15 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Title
-st.markdown("""
-    <h1 style='text-align: center; font-size: 2.8rem; font-weight: 900; margin-bottom: 0.2rem; color: #0F172A;'>Retail Dashboard</h1>
-    <h3 style='text-align: center; font-size: 1.4rem; font-weight: 600; margin-bottom: 1.5rem; color: #334155;'>Key Metrics</h3>
+# Header Banner
+st.markdown(f"""
+<div style='padding: 1rem 1.5rem; background-color: #FFFFFF; border-radius: 1rem; margin-bottom: 2rem;
+             box-shadow: 0 2px 6px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center;'>
+    <div>
+        <h2 style='margin: 0; color: #0F172A;'>Welcome to <b>Retail Dashboard</b></h2>
+        <p style='color: #64748B; margin: 0;'>Today is {pd.Timestamp.now().strftime('%A, %d %B %Y')}</p>
+    </div>
+</div>
 """, unsafe_allow_html=True)
 
 # DB Connection
@@ -113,19 +140,9 @@ profit_margin = (total_profit / total_revenue * 100) if total_revenue else 0
 # Metric Cards
 def render_metric(title, value):
     return f"""
-    <div style='
-        background-color: #FFFFFF;
-        padding: 1rem;
-        height: 110px;
-        border-radius: 1rem;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    '>
-        <h4 style='font-size: 0.95rem; color: #64748B; margin: 0;'>{title}</h4>
-        <h2 style='font-size: 1.6rem; color: #0F172A; margin: 0; font-weight: 800;'>{value}</h2>
+    <div class="card">
+        <h4>{title}</h4>
+        <h2>{value}</h2>
     </div>
     """
 
@@ -154,10 +171,10 @@ change = recent_sales['quantity_sold'].sum() - past_sales['quantity_sold'].sum()
 trend_icon = "↑" if change >= 0 else "↓"
 
 highlight_boxes = f"""
-<div style="display: flex; gap: 1rem;">
-    <div class="highlight-box">Best-Selling: <b>{top_product.iloc[0]['product_name'] if not top_product.empty else "N/A"}</b> ({int(top_product.iloc[0]['quantity_sold']) if not top_product.empty else 0} sold)</div>
-    <div class="highlight-box">Top Category: <b>{category_profit.iloc[0]['category'] if not category_profit.empty else "N/A"}</b> (₹ {category_profit.iloc[0]['profit']:,.0f})</div>
-    <div class="highlight-box">Sales Trend: {trend_icon} {abs(change)} vs last 7 days</div>
+<div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div class="highlight-box">🛒 Best-Selling: <b>{top_product.iloc[0]['product_name'] if not top_product.empty else "N/A"}</b> ({int(top_product.iloc[0]['quantity_sold']) if not top_product.empty else 0} sold)</div>
+    <div class="highlight-box">🏷️ Top Category: <b>{category_profit.iloc[0]['category'] if not category_profit.empty else "N/A"}</b> (₹ {category_profit.iloc[0]['profit']:,.0f})</div>
+    <div class="highlight-box">📈 Sales Trend: {trend_icon} {abs(change)} vs last 7 days</div>
 </div>
 """
 st.markdown(highlight_boxes, unsafe_allow_html=True)
@@ -189,8 +206,13 @@ fig = px.line(monthly_metrics, x='month', y=['quantity_sold', 'revenue', 'profit
               color_discrete_sequence=['#1D4ED8', '#10B981', '#F59E0B'],
               markers=True, title="Monthly Sales Overview")
 fig.update_layout(
-    plot_bgcolor='rgba(0,0,0,0)',
-    paper_bgcolor='rgba(0,0,0,0)',
+    plot_bgcolor='#FFFFFF',
+    paper_bgcolor='#FFFFFF',
+    font=dict(color="#0F172A", size=13),
+    title_font=dict(size=20),
+    margin=dict(t=50, b=40),
+    xaxis=dict(showgrid=False),
+    yaxis=dict(showgrid=True, gridcolor='#E5E7EB'),
     xaxis_title="Month",
     yaxis_title="Amount",
     legend_title_text="Metric"
@@ -207,10 +229,12 @@ if not category_grouped.empty:
                           title="Category-wise Sales", color='quantity_sold',
                           color_continuous_scale='Blues')
     category_fig.update_layout(
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='#FFFFFF',
+        paper_bgcolor='#FFFFFF',
         xaxis_title="Category",
-        yaxis_title="Units Sold"
+        yaxis_title="Units Sold",
+        font=dict(color="#0F172A", size=13),
+        title_font=dict(size=20)
     )
     st.plotly_chart(category_fig, use_container_width=True)
 else:
