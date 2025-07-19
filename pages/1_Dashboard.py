@@ -1,4 +1,4 @@
-# 📊 Retail Dashboard - Professionally Styled & Enhanced 
+# 📊 Retail Dashboard - Professionally Styled & Enhanced  
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -7,7 +7,7 @@ from db_connector import get_connection
 # Page Config
 st.set_page_config(page_title="📊 Retail Dashboard", layout="wide")
 
-# Styling Theme Variables
+# Styling Variables
 SIDEBAR_COLOR = "#0F172A"
 BG_COLOR = "#F9FAFB"
 CARD_BG = "#FFFFFF"
@@ -15,6 +15,7 @@ HIGHLIGHT_BG = "#1E293B"
 TEXT_COLOR = "#0F172A"
 FONT_FAMILY = "'Segoe UI', 'Roboto', sans-serif"
 
+# Inject CSS
 st.markdown(
     f"""
     <style>
@@ -23,76 +24,17 @@ st.markdown(
             font-family: {FONT_FAMILY};
         }}
 
-        /* SIDEBAR */
-        [data-testid="stSidebar"] > div:first-child {{
+        [data-testid="stSidebar"] {{
             background-color: {SIDEBAR_COLOR};
-            color: #E5E7EB;
-            padding: 1.5rem 1rem;
-            border-radius: 0 1rem 1rem 0;
+            color: white;
         }}
 
-        .stMultiSelect label, .stSelectbox label, .stSlider label,
-        .stTextInput label, .stNumberInput label {{
-            color: #E5E7EB !important;
-            font-size: 0.92rem;
-            font-weight: 600;
+        [data-testid="stSidebar"] * {{
+            color: #E2E8F0 !important;
+            font-size: 0.95rem !important;
+            font-weight: 500 !important;
         }}
 
-        .st-bw, .st-bs, .st-bv {{
-            font-size: 0.92rem !important;
-            color: white !important;
-        }}
-
-        /* HEADER */
-        h1 {{
-            font-size: 2.8rem !important;
-            font-weight: 900;
-            color: {TEXT_COLOR};
-            margin-bottom: 0.5rem;
-        }}
-
-        h3 {{
-            font-size: 1.5rem !important;
-            font-weight: 700;
-            color: {TEXT_COLOR};
-        }}
-
-        /* METRIC CARDS */
-        .metric-card {{
-            background-color: {CARD_BG};
-            padding: 1rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            width: 100%;
-            min-height: 80px;
-            margin-bottom: 0.5rem;
-        }}
-
-        .metric-card:hover {{
-            transform: scale(1.01);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-        }}
-
-        .metric-card h4 {{
-            font-size: 0.85rem;
-            color: #94A3B8;
-            margin-bottom: 0.3rem;
-            font-weight: 600;
-        }}
-
-        .metric-card h2 {{
-            font-size: 1.3rem;
-            color: {TEXT_COLOR};
-            margin: 0;
-            font-weight: 700;
-        }}
-
-        /* HIGHLIGHT CARDS */
         .highlight-box {{
             background-color: {HIGHLIGHT_BG};
             color: white;
@@ -111,21 +53,22 @@ st.markdown(
             color: #FACC15;
         }}
 
-        /* Hide Footer */
         footer {{ visibility: hidden; }}
     </style>
     """,
     unsafe_allow_html=True
 )
 
+# Title
+st.markdown("""
+    <h1 style='text-align: center; font-size: 2.8rem; font-weight: 900; margin-bottom: 0.2rem; color: #0F172A;'>Retail Dashboard</h1>
+    <h3 style='text-align: center; font-size: 1.4rem; font-weight: 600; margin-bottom: 1.5rem; color: #334155;'>Key Metrics</h3>
+""", unsafe_allow_html=True)
 
-# Centered Title
-st.markdown("<h1 style='text-align: center; margin-bottom: 1rem;'>Retail Dashboard</h1>", unsafe_allow_html=True)
-
-# Connect to DB
+# DB Connection
 db = get_connection()
 
-# Load data
+# Load Data
 product_df = pd.read_sql("SELECT * FROM product", db)
 purchases_df = pd.read_sql("SELECT product_id, product_name, category, quantity_purchased, cost_price, order_date FROM purchases", db)
 sales_df = pd.read_sql("SELECT product_id, quantity_sold, selling_price, sales_date FROM sales", db)
@@ -136,14 +79,14 @@ combined_products = pd.concat([
     purchases_df[['product_id', 'product_name', 'category']]
 ]).drop_duplicates('product_id')
 
-# Sidebar
+# Sidebar Filters
 st.sidebar.header("🔍 Filter Dashboard")
 category_filter = st.sidebar.multiselect("Select Categories", combined_products['category'].dropna().unique(), default=combined_products['category'].unique())
 product_filter = st.sidebar.multiselect("Select Products", combined_products['product_name'].dropna().unique(), default=combined_products['product_name'].unique())
 
 # Apply filters
 filtered_products = combined_products[
-    combined_products['category'].isin(category_filter) & 
+    combined_products['category'].isin(category_filter) &
     combined_products['product_name'].isin(product_filter)
 ]
 purchases_df = purchases_df[purchases_df['product_id'].isin(filtered_products['product_id'])]
@@ -155,7 +98,7 @@ sold_df = sales_df.groupby('product_id')['quantity_sold'].sum().reset_index()
 stock_merged = pd.merge(stock_df, sold_df, on='product_id', how='outer').fillna(0)
 stock_merged['live_stock'] = stock_merged['quantity_purchased'] - stock_merged['quantity_sold']
 
-# Profit calculation
+# Profit
 sales_df = sales_df.merge(purchases_df[['product_id', 'cost_price']], on='product_id', how='left')
 sales_df['profit'] = sales_df['quantity_sold'] * (sales_df['selling_price'] - sales_df['cost_price'])
 
@@ -167,27 +110,37 @@ total_revenue = (sales_df['quantity_sold'] * sales_df['selling_price']).sum()
 total_profit = sales_df['profit'].sum()
 profit_margin = (total_profit / total_revenue * 100) if total_revenue else 0
 
-# Metrics
-st.markdown("<h3 style='text-align: center; margin-top: -0.5rem;'>Key Metrics</h3>", unsafe_allow_html=True)
+# Metric Cards
+def render_metric(title, value):
+    return f"""
+    <div style='
+        background-color: #FFFFFF;
+        padding: 1rem;
+        height: 110px;
+        border-radius: 1rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    '>
+        <h4 style='font-size: 0.85rem; color: #64748B; margin: 0;'>{title}</h4>
+        <h2 style='font-size: 1.4rem; color: #0F172A; margin: 0; font-weight: 700;'>{value}</h2>
+    </div>
+    """
 
-row1_col1, row1_col2, row1_col3 = st.columns([1, 1, 1])
-with row1_col1:
-    st.markdown(f"<div class='metric-card'><h4>Total Products</h4><h2>{total_products}</h2></div>", unsafe_allow_html=True)
-with row1_col2:
-    st.markdown(f"<div class='metric-card'><h4>Total Stock</h4><h2>{int(total_stock_value)}</h2></div>", unsafe_allow_html=True)
-with row1_col3:
-    st.markdown(f"<div class='metric-card'><h4>Units Sold</h4><h2>{int(total_units_sold)}</h2></div>", unsafe_allow_html=True)
+col1, col2, col3 = st.columns(3)
+col1.markdown(render_metric("Total Products", total_products), unsafe_allow_html=True)
+col2.markdown(render_metric("Total Stock", int(total_stock_value)), unsafe_allow_html=True)
+col3.markdown(render_metric("Units Sold", int(total_units_sold)), unsafe_allow_html=True)
 
-row2_col1, row2_col2, row2_col3 = st.columns([1, 1, 1])
-with row2_col1:
-    st.markdown(f"<div class='metric-card'><h4>Total Revenue</h4><h2>₹ {total_revenue:,.2f}</h2></div>", unsafe_allow_html=True)
-with row2_col2:
-    st.markdown(f"<div class='metric-card'><h4>Total Profit</h4><h2>₹ {total_profit:,.2f}</h2></div>", unsafe_allow_html=True)
-with row2_col3:
-    st.markdown(f"<div class='metric-card'><h4>Profit Margin</h4><h2>{profit_margin:.1f}%</h2></div>", unsafe_allow_html=True)
+col4, col5, col6 = st.columns(3)
+col4.markdown(render_metric("Total Revenue", f"₹ {total_revenue:,.2f}"), unsafe_allow_html=True)
+col5.markdown(render_metric("Total Profit", f"₹ {total_profit:,.2f}"), unsafe_allow_html=True)
+col6.markdown(render_metric("Profit Margin", f"{profit_margin:.1f}%"), unsafe_allow_html=True)
 
 # Highlights
-st.markdown("###  Highlights")
+st.markdown("### Highlights")
 top_product = sales_df.groupby('product_id')['quantity_sold'].sum().reset_index()
 top_product = top_product.merge(filtered_products, on='product_id', how='left').sort_values(by='quantity_sold', ascending=False).head(1)
 
@@ -200,30 +153,14 @@ past_sales = sales_df[sales_df['sales_date'] <= pd.Timestamp.now() - pd.Timedelt
 change = recent_sales['quantity_sold'].sum() - past_sales['quantity_sold'].sum()
 trend_icon = "↑" if change >= 0 else "↓"
 
-highlight_boxes = """
-<div style="display: flex; gap: 1.2rem; justify-content: space-between;">
-    <div class="highlight-box" style="flex: 1;">
-        Best-Selling: <b>{}</b> ({} sold)
-    </div>
-    <div class="highlight-box" style="flex: 1;">
-        Top Category: <b>{}</b> (₹ {:,.0f})
-    </div>
-    <div class="highlight-box" style="flex: 1;">
-        Sales Trend: {} {} vs last 7 days
-    </div>
+highlight_boxes = f"""
+<div style="display: flex; gap: 1rem;">
+    <div class="highlight-box">Best-Selling: <b>{top_product.iloc[0]['product_name'] if not top_product.empty else "N/A"}</b> ({int(top_product.iloc[0]['quantity_sold']) if not top_product.empty else 0} sold)</div>
+    <div class="highlight-box">Top Category: <b>{category_profit.iloc[0]['category'] if not category_profit.empty else "N/A"}</b> (₹ {category_profit.iloc[0]['profit']:,.0f})</div>
+    <div class="highlight-box">Sales Trend: {trend_icon} {abs(change)} vs last 7 days</div>
 </div>
 """
-
-highlight_html = highlight_boxes.format(
-    top_product.iloc[0]['product_name'] if not top_product.empty else "N/A",
-    int(top_product.iloc[0]['quantity_sold']) if not top_product.empty else 0,
-    category_profit.iloc[0]['category'] if not category_profit.empty else "N/A",
-    category_profit.iloc[0]['profit'] if not category_profit.empty else 0,
-    trend_icon,
-    abs(change)
-)
-
-st.markdown(highlight_html, unsafe_allow_html=True)
+st.markdown(highlight_boxes, unsafe_allow_html=True)
 
 # Low Stock
 st.markdown("### ⚠️ Low Stock Alerts")
