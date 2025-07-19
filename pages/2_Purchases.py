@@ -27,19 +27,16 @@ st.markdown("""
     .metric-card {
         background-color: #1E293B;
         color: #FFFFFF;
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        padding: 0.6rem 0.8rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         text-align: center;
         margin-bottom: 1rem;
-        height: 100px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        min-height: 100px;
     }
     .metric-card h4 {
-        font-size: 1rem;
-        margin: 0;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
         color: #CBD5E1;
     }
     .metric-card h2 {
@@ -56,9 +53,9 @@ st.markdown("""
         color: #1F2937;
     }
     .dataframe thead th {
-        background-color: #1E293B;
+        background-color: #CBD5E1;
         font-weight: bold;
-        color: #FFFFFF;
+        color: #1E293B;
         font-size: 0.95rem;
     }
     </style>
@@ -156,6 +153,7 @@ available_cols = [col for col in expected_cols if col in filtered.columns]
 st.dataframe(filtered[available_cols], use_container_width=True)
 
 # Next sections (charts and alerts) can be upgraded similarly
+
 
 
 
