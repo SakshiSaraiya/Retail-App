@@ -4,6 +4,9 @@ from db_connector import get_connection
 from datetime import date
 import plotly.express as px
 
+with open("professional_theme.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
 # --- Page Config ---
 st.set_page_config(page_title="Expense Management", layout="wide")
 
