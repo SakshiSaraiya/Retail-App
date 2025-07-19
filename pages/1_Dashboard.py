@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from db_connector import get_connection
 
 # Page Config
-st.set_page_config(page_title="📊 Retail Dashboard", layout="wide")
+st.set_page_config(page_title="\U0001F4CA Retail Dashboard", layout="wide")
 
 # Styling Variables
 SIDEBAR_COLOR = "#0F172A"
@@ -39,10 +39,14 @@ st.markdown(
         .card {{
             background-color: {CARD_BG};
             border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
+            padding: 1.25rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             margin-bottom: 1rem;
             text-align: center;
+            height: 130px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }}
 
         .card h4 {{
@@ -53,7 +57,7 @@ st.markdown(
         }}
 
         .card h2 {{
-            margin: 0;
+            margin: 0.25rem 0 0;
             font-size: 2rem;
             font-weight: 800;
             color: #0F172A;
@@ -63,29 +67,29 @@ st.markdown(
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
+            justify-content: space-between;
         }}
 
         .highlight-box {{
             background-color: #1E293B;
             color: white;
-            padding: 0.75rem 1rem;
+            padding: 1.2rem 1rem;
             border-radius: 0.75rem;
             font-weight: 500;
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             flex: 1;
-            min-width: 200px;
-            max-width: 300px;
+            min-width: 240px;
             text-align: center;
         }}
 
         .highlight-box b {{
             color: #FACC15;
-            font-size: 1rem;
+            font-size: 1.2rem;
         }}
 
         .highlight-box small {{
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             display: block;
             margin-top: 4px;
         }}
@@ -114,8 +118,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-# Continue with rest of logic unchanged from previous update...
 
 
 # Header Banner
