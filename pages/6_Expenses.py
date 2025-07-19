@@ -84,12 +84,13 @@ conn = get_connection()
 cursor = conn.cursor()
 
 # --- Add Expenses Section ---
-st.markdown("### Add Expenses")
-
-# Custom styled "+" button using st.button
-col_add = st.columns([0.1, 0.9])[0]
-with col_add:
+# Header and Add Button in a single row
+header_col1, header_col2 = st.columns([0.85, 0.15])
+with header_col1:
+    st.markdown("### Add Expenses")
+with header_col2:
     add_clicked = st.button("➕ Add Expense", key="add_expense_button", help="Click to add an expense")
+
 
 if add_clicked or st.session_state.get("show_form", False):
     st.session_state["show_form"] = True  # Keep form visible once triggered
