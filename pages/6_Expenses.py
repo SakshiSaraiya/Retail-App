@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 from db_connector import get_connection
 from datetime import date
@@ -24,7 +24,7 @@ st.markdown("""
 
     /* Main background */
     .block-container {
-        background-color: #FFF8FAFC;
+        background-color: #F8FAFC;
         padding: 2rem;
     }
 
@@ -49,12 +49,13 @@ st.markdown("""
 
     /* Metric Cards */
     .metric-card {
-        background-color: #F8FAFC;
+        background-color: #FFFFFF;
         padding: 1rem;
         border-radius: 12px;
         text-align: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
         margin-bottom: 1rem;
+        color: #1E293B;
     }
 
     /* Add Button */
@@ -84,16 +85,14 @@ conn = get_connection()
 cursor = conn.cursor()
 
 # --- Add Expenses Section ---
-# Header and Add Button in a single row
 header_col1, header_col2 = st.columns([0.85, 0.15])
 with header_col1:
     st.markdown("### Add Expenses")
 with header_col2:
     add_clicked = st.button("➕ Add Expense", key="add_expense_button", help="Click to add an expense")
 
-
 if add_clicked or st.session_state.get("show_form", False):
-    st.session_state["show_form"] = True  # Keep form visible once triggered
+    st.session_state["show_form"] = True
 
 if st.session_state.get("show_form", False):
     with st.form("expense_form"):
