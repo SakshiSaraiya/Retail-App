@@ -37,38 +37,42 @@ st.markdown(
 
         .card {{
             background-color: {CARD_BG};
-            border-radius: 1rem;
-            padding: 1.25rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             margin-bottom: 1rem;
             text-align: center;
+            min-height: 85px;
         }}
 
         .card h4 {{
             margin: 0;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: #64748B;
         }}
 
         .card h2 {{
             margin: 0;
-            font-size: 1.8rem;
-            font-weight: 800;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: #0F172A;
         }}
 
         .highlight-box {{
             background-color: #1E293B;
             color: white;
-            padding: 1.1rem 1.5rem;
-            border-radius: 1rem;
+            padding: 1rem;
+            border-radius: 0.75rem;
             font-weight: 500;
-            font-size: 1.1rem;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            font-size: 1rem;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 200px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            text-align: center;
         }}
 
         .highlight-box b {{
@@ -140,7 +144,7 @@ profit_margin = (total_profit / total_revenue * 100) if total_revenue else 0
 # Metric Cards
 def render_metric(title, value):
     return f"""
-    <div class="card">
+    <div class=\"card\">
         <h4>{title}</h4>
         <h2>{value}</h2>
     </div>
@@ -171,13 +175,14 @@ change = recent_sales['quantity_sold'].sum() - past_sales['quantity_sold'].sum()
 trend_icon = "↑" if change >= 0 else "↓"
 
 highlight_boxes = f"""
-<div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
-    <div class="highlight-box">🛒 Best-Selling: <b>{top_product.iloc[0]['product_name'] if not top_product.empty else "N/A"}</b> ({int(top_product.iloc[0]['quantity_sold']) if not top_product.empty else 0} sold)</div>
-    <div class="highlight-box">🏷️ Top Category: <b>{category_profit.iloc[0]['category'] if not category_profit.empty else "N/A"}</b> (₹ {category_profit.iloc[0]['profit']:,.0f})</div>
-    <div class="highlight-box">📈 Sales Trend: {trend_icon} {abs(change)} vs last 7 days</div>
+<div style=\"display: flex; gap: 1rem; justify-content: space-between; flex-wrap: wrap;\">
+    <div class=\"highlight-box\">🛒 Best-Selling:<br> <b>{top_product.iloc[0]['product_name'] if not top_product.empty else "N/A"}</b><br>({int(top_product.iloc[0]['quantity_sold']) if not top_product.empty else 0} sold)</div>
+    <div class=\"highlight-box\">🏷️ Top Category:<br> <b>{category_profit.iloc[0]['category'] if not category_profit.empty else "N/A"}</b><br>(₹ {category_profit.iloc[0]['profit']:,.0f})</div>
+    <div class=\"highlight-box\">📈 Sales Trend:<br> {trend_icon} {abs(change)} vs last 7 days</div>
 </div>
 """
 st.markdown(highlight_boxes, unsafe_allow_html=True)
+
 
 # Low Stock
 st.markdown("### ⚠️ Low Stock Alerts")
