@@ -1,144 +1,119 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from datetime import datetime
+from datetime import date
 
-st.set_page_config(page_title="Expense Management", layout="wide")
+# Set page config
+st.set_page_config(page_title="Expense Manager", layout="wide")
 
-# ✅ Custom CSS: Sidebar dark, main area white with black text
+# Initialize session state
+if "expense_data" not in st.session_state:
+    st.session_state.expense_data = pd.DataFrame(columns=["Date", "Category", "Expense Type", "Amount", "Description"])
+
+if "show_form" not in st.session_state:
+    st.session_state.show_form = False
+
+# Apply custom CSS
 st.markdown("""
     <style>
-        [data-testid="stSidebar"] {
-            background-color: #1c1c1c;
+        .main {
+            color: #000000 !important;
         }
-        .block-container {
-            background-color: white;
-            color: black;
+        h1, h2, h3, h4 {
+            color: #000000 !important;
         }
-        h1, h2, h3, h4, h5, h6 {
-            color: black !important;
+        .stButton>button {
+            background-color: #1f77b4;
+            color: white;
         }
-        .stTextInput > div > div > input,
-        .stNumberInput input,
-        .stDateInput input,
-        .stSelectbox div div {
-            color: black !important;
+        .stButton>button:hover {
+            background-color: #105c91;
+        }
+        .css-1cpxqw2 {
+            color: #000000 !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# ✅ Session state to store expenses
-if "expenses" not in st.session_state:
-    st.session_state.expenses = pd.DataFrame(columns=[
-        "date", "category", "expense_type", "amount", "description"
-    ])
-
-# ✅ Page Title
+# Title
 st.title("Expense Management Dashboard")
 
-# ✅ Section 1: Add Expense Manually
-st.header("Add Expense Manually")
+# --- Toggle for Add Expense Form ---
+st.subheader("Add Expense Manually")
+if st.button("Add Manually"):
+    st.session_state.show_form = not st.session_state.show_form
 
-with st.form("manual_expense_form"):
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        date = st.date_input("Date", datetime.today())
-    with col2:
-        category = st.text_input("Category")
-    with col3:
-        expense_type = st.selectbox("Expense Type", ["Fixed", "Variable"])
+# --- Add Expense Form ---
+if st.session_state.show_form:
+    with st.form("manual_expense_form"):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            date_input = st.date_input("Date", value=date.today())
+        with col2:
+            category = st.text_input("Category")
+        with col3:
+            expense_type = st.selectbox("Expense Type", ["Fixed", "Variable"])
+        amount = st.number_input("Amount (₹)", min_value=0.0, step=0.01)
+        description = st.text_input("Description")
+        submit = st.form_submit_button("Add Expense")
+        if submit:
+            new_data = {
+                "Date": pd.to_datetime(date_input),
+                "Category": category,
+                "Expense Type": expense_type,
+                "Amount": amount,
+                "Description": description
+            }
+            st.session_state.expense_data = pd.concat([st.session_state.expense_data, pd.DataFrame([new_data])], ignore_index=True)
+            st.success("Expense added successfully!")
 
-    amount = st.number_input("Amount (₹)", min_value=0.0, step=100.0)
-    description = st.text_input("Description")
-
-    submit = st.form_submit_button("Add Expense")
-
-    if submit:
-        new_row = pd.DataFrame({
-            "date": [date],
-            "category": [category],
-            "expense_type": [expense_type],
-            "amount": [amount],
-            "description": [description]
-        })
-        st.session_state.expenses = pd.concat(
-            [st.session_state.expenses, new_row], ignore_index=True)
-        st.success("Expense added successfully.")
-
-# ✅ Section 2: Upload CSV File
-st.header("Upload Expenses via CSV")
-
+# --- Upload Expenses via CSV ---
+st.subheader("Upload Expenses via CSV")
 with st.expander("📄 View Sample CSV Format"):
     st.markdown("""
-    Your CSV file should have the following columns:
-    - `date`
-    - `category`
-    - `expense_type`
-    - `amount`
-    - `description`
+    **Sample Format:**  
+    `Date`, `Category`, `Expense Type`, `Amount`, `Description`  
+    `2025-07-01`, `Rent`, `Fixed`, `10000`, `Monthly rent`
     """)
+uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
+    df["Date"] = pd.to_datetime(df["Date"])
+    st.session_state.expense_data = pd.concat([st.session_state.expense_data, df], ignore_index=True)
+    st.success("CSV uploaded and data added!")
 
-uploaded = st.file_uploader("Upload CSV File", type="csv")
-if uploaded:
-    try:
-        df_csv = pd.read_csv(uploaded)
-        required_cols = {"date", "category", "expense_type", "amount", "description"}
-        if required_cols.issubset(df_csv.columns):
-            st.session_state.expenses = pd.concat(
-                [st.session_state.expenses, df_csv], ignore_index=True)
-            st.success("CSV file uploaded and merged.")
-        else:
-            st.error("Missing required columns in CSV.")
-    except Exception as e:
-        st.error(f"Error reading file: {e}")
+# --- Expense Table and Summary ---
+st.subheader("Expense History and Trends")
 
-# ✅ Section 3: Expense Summary and Chart
-df = st.session_state.expenses.copy()
-if not df.empty:
-    st.header("Expense History and Trends")
+if not st.session_state.expense_data.empty:
+    # Expense table
+    st.dataframe(st.session_state.expense_data.style.format({"Amount": "₹{:.2f}"}))
 
-    # Data Table
-    st.subheader("Expense Table")
-    st.dataframe(df, use_container_width=True)
+    # Summary
+    total_expense = st.session_state.expense_data["Amount"].sum()
+    fixed_expense = st.session_state.expense_data[st.session_state.expense_data["Expense Type"] == "Fixed"]["Amount"].sum()
+    variable_expense = total_expense - fixed_expense
 
-    # Summary Metrics
-    st.subheader("Expense Summary")
     col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Total Expense", f"₹ {df['amount'].sum():,.2f}")
-    with col2:
-        st.metric("Fixed", f"₹ {df[df['expense_type'] == 'Fixed']['amount'].sum():,.2f}")
-    with col3:
-        st.metric("Variable", f"₹ {df[df['expense_type'] == 'Variable']['amount'].sum():,.2f}")
+    col1.metric("Total Expenses", f"₹ {total_expense:,.2f}")
+    col2.metric("Fixed", f"₹ {fixed_expense:,.2f}")
+    col3.metric("Variable", f"₹ {variable_expense:,.2f}")
 
-    # Monthly Grouping for Chart
-    df["date"] = pd.to_datetime(df["date"])
-    df["Month"] = df["date"].dt.to_period("M").astype(str)
+    # Bar chart of expenses by type over time
+    st.markdown("### Monthly Expense by Type")
+    monthly_data = st.session_state.expense_data.copy()
+    monthly_data["Month"] = monthly_data["Date"].dt.to_period("M").dt.to_timestamp()
+    chart_data = monthly_data.groupby(["Month", "Expense Type"])["Amount"].sum().reset_index()
 
-    # ✅ Clean Bar Chart (Professional Look)
     fig = px.bar(
-        df,
+        chart_data,
         x="Month",
-        y="amount",
-        color="expense_type",
+        y="Amount",
+        color="Expense Type",
         barmode="group",
-        labels={"amount": "Expense Amount (₹)", "Month": "Month"},
-        color_discrete_sequence=px.colors.qualitative.Safe
+        title="Monthly Expense Comparison",
+        labels={"Amount": "Amount (₹)"}
     )
-
-    fig.update_layout(
-        title="Monthly Expense by Type",
-        xaxis_title="Month",
-        yaxis_title="Amount (₹)",
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        font=dict(color="black"),
-        showlegend=True
-    )
-
-    fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(showgrid=False)
-
     st.plotly_chart(fig, use_container_width=True)
 else:
-    st.info("No expense data available yet. Please add manually or upload a CSV.")
+    st.info("No expenses yet. Add manually or upload a CSV to begin.")
