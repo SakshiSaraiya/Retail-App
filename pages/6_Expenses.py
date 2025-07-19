@@ -24,7 +24,7 @@ st.markdown("""
 
     /* Main background */
     .block-container {
-        background-color: #FFFFFF;
+        background-color: #FFF8FAFC;
         padding: 2rem;
     }
 
