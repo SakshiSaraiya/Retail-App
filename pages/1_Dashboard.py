@@ -172,12 +172,30 @@ past_sales = sales_df[sales_df['sales_date'] <= pd.Timestamp.now() - pd.Timedelt
 change = recent_sales['quantity_sold'].sum() - past_sales['quantity_sold'].sum()
 trend_icon = "↑" if change >= 0 else "↓"
 
-h1, h2, h3 = st.columns(3)
-if not top_product.empty:
-    h1.markdown(f"<div class='highlight-box'> Best-Selling: <b>{top_product.iloc[0]['product_name']}</b> ({int(top_product.iloc[0]['quantity_sold'])} sold)</div>", unsafe_allow_html=True)
-if not category_profit.empty:
-    h2.markdown(f"<div class='highlight-box'> Top Category: <b>{category_profit.iloc[0]['category']}</b> (₹ {category_profit.iloc[0]['profit']:,.0f})</div>", unsafe_allow_html=True)
-h3.markdown(f"<div class='highlight-box'> Sales Trend: {trend_icon} {abs(change)} vs last 7 days</div>", unsafe_allow_html=True)
+highlight_boxes = """
+<div style="display: flex; gap: 1.2rem; justify-content: space-between;">
+    <div class="highlight-box" style="flex: 1;">
+        Best-Selling: <b>{}</b> ({} sold)
+    </div>
+    <div class="highlight-box" style="flex: 1;">
+        Top Category: <b>{}</b> (₹ {:,.0f})
+    </div>
+    <div class="highlight-box" style="flex: 1;">
+        Sales Trend: {} {} vs last 7 days
+    </div>
+</div>
+"""
+
+highlight_html = highlight_boxes.format(
+    top_product.iloc[0]['product_name'] if not top_product.empty else "N/A",
+    int(top_product.iloc[0]['quantity_sold']) if not top_product.empty else 0,
+    category_profit.iloc[0]['category'] if not category_profit.empty else "N/A",
+    category_profit.iloc[0]['profit'] if not category_profit.empty else 0,
+    trend_icon,
+    abs(change)
+)
+
+st.markdown(highlight_html, unsafe_allow_html=True)
 
 # Low Stock
 st.markdown("### ⚠️ Low Stock Alerts")
