@@ -1,114 +1,154 @@
 import streamlit as st
 import pandas as pd
+from db_connector import get_connection
+from datetime import date
 import plotly.express as px
-from datetime import datetime
 
-# ------------------ PAGE CONFIG + THEME FIX ------------------ #
-st.set_page_config(page_title="Expense Management Dashboard", layout="wide")
+# --- Page Config ---
+st.set_page_config(
+    page_title="Expense Management",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# Force white background, black text, and styled inputs/buttons
+# --- CSS Styling ---
 st.markdown("""
     <style>
-        .main {
-            background-color: white !important;
-        }
-        body, html {
-            background-color: white !important;
-            color: black !important;
-        }
-        .stTextInput input, .stDateInput input, .stNumberInput input, .stSelectbox div {
-            background-color: white !important;
-            color: black !important;
-        }
-        .stButton>button {
-            background-color: #1f77b4;
-            color: white !important;
-            border: none;
-            border-radius: 6px;
-        }
-        .stButton>button:hover {
-            background-color: #105c91;
-        }
-        .stDataFrame {
-            color: black !important;
-        }
+    [data-testid="stSidebar"] {
+        background-color: #0F172A;
+    }
+    [data-testid="stSidebar"] * {
+        color: #F1F5F9 !important;
+    }
+    .block-container {
+        background-color: #FFFFFF;
+        padding-top: 2rem;
+    }
+    h1, h3, h2, label, p, div {
+        color: #0F172A !important;
+    }
+    .stButton > button {
+        background-color: #0F172A;
+        color: white;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+    }
+    .stButton > button:hover {
+        background-color: #1E293B;
+    }
+    .stDataFrame div {
+        font-size: 0.92rem;
+        color: black !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-# ------------------ SESSION STATE TO STORE EXPENSES ------------------ #
-if "expenses" not in st.session_state:
-    st.session_state.expenses = pd.DataFrame(columns=["Date", "Category", "Expense Type", "Amount", "Description"])
+# --- Title ---
+st.markdown("<h1>Expense Management</h1>", unsafe_allow_html=True)
 
-# ------------------ TITLE ------------------ #
-st.title("Expense Management Dashboard")
+# --- DB Connection ---
+conn = get_connection()
+cursor = conn.cursor()
 
-# ------------------ MANUAL EXPENSE ENTRY ------------------ #
-st.subheader("Add Expense Manually")
+# --------- Add Manually Section ---------
+st.markdown("### Add Expenses")
 
-with st.form("manual_entry"):
+if st.button("➕ Add Manually"):
+    with st.form("expense_form"):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            expense_date = st.date_input("Expense Date", value=date.today())
+        with col2:
+            category = st.selectbox("Category", ["Rent", "Salary", "Utilities", "Marketing", "Transport", "Misc"])
+        with col3:
+            expense_type = st.selectbox("Type", ["Fixed", "Variable"])
+
+        amount = st.number_input("Amount (₹)", min_value=0.0, format="%.2f")
+        description = st.text_input("Optional Description")
+
+        submit = st.form_submit_button("Add Expense")
+
+        if submit:
+            try:
+                cursor.execute("""
+                    INSERT INTO expenses (date, category, expense_type, amount, description)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (expense_date, category, expense_type, amount, description))
+                conn.commit()
+                st.success("Expense added successfully.")
+            except Exception as e:
+                st.error(f"Error: {e}")
+
+# --------- CSV Upload Section ---------
+st.markdown("### 📎 Upload Expenses from CSV")
+
+sample_csv = pd.DataFrame({
+    "date": ["2025-07-01"],
+    "category": ["Marketing"],
+    "expense_type": ["Variable"],
+    "amount": [5000],
+    "description": ["Social Media Campaign"]
+})
+with st.expander("View Sample Format"):
+    st.dataframe(sample_csv, use_container_width=True)
+
+uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
+
+if uploaded_file:
+    try:
+        df_upload = pd.read_csv(uploaded_file)
+        df_upload["date"] = pd.to_datetime(df_upload["date"]).dt.date
+
+        for _, row in df_upload.iterrows():
+            cursor.execute("""
+                INSERT INTO expenses (date, category, expense_type, amount, description)
+                VALUES (%s, %s, %s, %s, %s)
+            """, tuple(row))
+        conn.commit()
+        st.success("Expenses uploaded successfully.")
+    except Exception as e:
+        st.error(f"Error uploading file: {e}")
+
+# --------- Expense History & Summary ---------
+st.markdown("### 📊 Expense History & Summary")
+
+try:
+    df = pd.read_sql("SELECT date, category, expense_type, amount, description FROM expenses ORDER BY date DESC", conn)
+    df["date"] = pd.to_datetime(df["date"]).dt.date
+
+    st.dataframe(df, use_container_width=True)
+
     col1, col2, col3 = st.columns(3)
-    with col1:
-        date = st.date_input("Date", datetime.today())
-    with col2:
-        category = st.text_input("Category")
-    with col3:
-        expense_type = st.selectbox("Expense Type", ["Fixed", "Variable"])
+    col1.metric("Total Expenses", f"₹ {df['amount'].sum():,.2f}")
+    col2.metric("Fixed Costs", f"₹ {df[df['expense_type']=='Fixed']['amount'].sum():,.2f}")
+    col3.metric("Variable Costs", f"₹ {df[df['expense_type']=='Variable']['amount'].sum():,.2f}")
 
-    amount = st.number_input("Amount (₹)", min_value=0.0, step=0.01)
-    description = st.text_input("Description")
+    # --- Monthly Bar Chart ---
+    df["month"] = pd.to_datetime(df["date"]).dt.to_period("M").astype(str)
+    monthly_chart = df.groupby(["month", "expense_type"])["amount"].sum().reset_index()
 
-    submitted = st.form_submit_button("Add Expense")
-    if submitted:
-        new_entry = pd.DataFrame([{
-            "Date": date.strftime("%Y-%m-%d"),
-            "Category": category,
-            "Expense Type": expense_type,
-            "Amount": amount,
-            "Description": description
-        }])
-        st.session_state.expenses = pd.concat([st.session_state.expenses, new_entry], ignore_index=True)
-        st.success("Expense added successfully.")
-
-# ------------------ FILE UPLOAD SECTION ------------------ #
-st.subheader("Upload Expenses via CSV")
-
-with st.expander("📄 View Sample CSV Format"):
-    st.markdown("Your CSV file should have the following columns:")
-    st.code("Date, Category, Expense Type, Amount, Description", language="csv")
-
-uploaded_file = st.file_uploader("Upload CSV File", type=["csv"])
-if uploaded_file is not None:
-    df_uploaded = pd.read_csv(uploaded_file)
-    if set(["Date", "Category", "Expense Type", "Amount", "Description"]).issubset(df_uploaded.columns):
-        st.session_state.expenses = pd.concat([st.session_state.expenses, df_uploaded], ignore_index=True)
-        st.success("CSV uploaded and merged with existing data.")
-    else:
-        st.error("CSV must contain columns: Date, Category, Expense Type, Amount, Description")
-
-# ------------------ DISPLAY EXPENSE HISTORY ------------------ #
-st.subheader("Expense History and Trends")
-
-if not st.session_state.expenses.empty:
-    st.dataframe(st.session_state.expenses)
-
-    # Bar chart of expenses by category
     fig = px.bar(
-        st.session_state.expenses,
-        x="Category",
-        y="Amount",
-        color="Expense Type",
-        title="Expenses by Category",
+        monthly_chart,
+        x="month",
+        y="amount",
+        color="expense_type",
+        title="Monthly Expense Trend",
         barmode="group",
-        template="simple_white",
-        labels={"Amount": "₹ Amount"}
+        text_auto='.2s'
     )
+
     fig.update_layout(
-        xaxis_title="Category",
-        yaxis_title="Amount (₹)",
-        legend_title="Expense Type",
-        title_font=dict(size=18),
-        title_x=0.5
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font_color='black',
+        xaxis=dict(showgrid=False, title="Month"),
+        yaxis=dict(showgrid=False, title="Amount (₹)"),
+        legend_title_text="Expense Type",
+        title_font_size=18
     )
+
     st.plotly_chart(fig, use_container_width=True)
-else:
-    st.info("No expenses to display. Add some manually or upload a CSV.")
+
+except Exception as e:
+    st.warning(f"No data or error loading data: {e}")
