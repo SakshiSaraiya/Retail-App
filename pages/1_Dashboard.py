@@ -15,7 +15,7 @@ HIGHLIGHT_BG = "#1E293B"
 TEXT_COLOR = "#0F172A"
 FONT_FAMILY = "'Segoe UI', 'Roboto', sans-serif"
 
-# Custom CSS Styling Block
+# Custom CSS Styling
 st.markdown(
     f"""
     <style>
@@ -30,7 +30,7 @@ st.markdown(
             padding: 1.5rem;
         }}
 
-        .stMultiSelect, .stSelectbox, .stSlider {{
+        .stMultiSelect label, .stSelectbox label, .stSlider label {{
             color: white !important;
         }}
 
@@ -175,7 +175,7 @@ if not low_stock.empty:
 else:
     st.success("✅ All products have sufficient stock.")
 
-# Monthly Chart
+# Monthly Sales Chart
 st.markdown("### 📅 Monthly Sales Overview")
 sales_df = sales_df.dropna(subset=['sales_date'])
 sales_df['month'] = sales_df['sales_date'].dt.to_period('M').astype(str)
@@ -198,7 +198,7 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-# Category-wise Sales
+# Category-wise Sales Chart
 st.markdown("### 📦 Category-wise Sales")
 category_sales = sales_df.merge(filtered_products, on='product_id', how='left')
 category_grouped = category_sales.groupby('category')['quantity_sold'].sum().reset_index()
