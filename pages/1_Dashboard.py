@@ -15,7 +15,7 @@ HIGHLIGHT_BG = "#1E293B"
 TEXT_COLOR = "#0F172A"
 FONT_FAMILY = "'Segoe UI', 'Roboto', sans-serif"
 
-# Custom CSS Styling
+# Updated Custom CSS Styling
 st.markdown(
     f"""
     <style>
@@ -26,50 +26,47 @@ st.markdown(
 
         [data-testid="stSidebar"] > div:first-child {{
             background-color: {SIDEBAR_COLOR};
-            color: white;
-            padding: 1.5rem;
+            color: #E2E8F0;
+            padding: 1.5rem 1rem;
             border-radius: 0 1rem 1rem 0;
         }}
 
         .stMultiSelect label, .stSelectbox label, .stSlider label {{
-            color: white !important;
+            color: #E2E8F0 !important;
             font-weight: 500;
-        }}
-
-        .stSlider > div[data-baseweb="slider"] {{
-            padding: 0 1rem;
+            font-size: 0.9rem;
         }}
 
         .metric-card {{
             background-color: {CARD_BG};
-            padding: 1.5rem;
-            border-radius: 1.5rem;
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+            padding: 1rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
             width: 100%;
-            min-height: 120px;
+            min-height: 100px;
             margin-bottom: 1rem;
         }}
 
         .metric-card:hover {{
-            transform: scale(1.02);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transform: scale(1.01);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
         }}
 
         .metric-card h4 {{
-            font-size: 0.9rem;
-            color: #64748b;
-            margin-bottom: 0.4rem;
-            font-weight: 500;
+            font-size: 0.85rem;
+            color: #94A3B8;
+            margin-bottom: 0.2rem;
+            font-weight: 600;
             text-align: center;
         }}
 
         .metric-card h2 {{
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             color: {TEXT_COLOR};
             margin-top: 0;
             font-weight: 700;
@@ -79,15 +76,32 @@ st.markdown(
         .highlight-box {{
             background-color: {HIGHLIGHT_BG};
             color: white;
-            padding: 1.2rem 1rem;
+            padding: 1rem;
             border-radius: 1rem;
             font-weight: 500;
-            font-size: 0.93rem;
+            font-size: 0.9rem;
             box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }}
 
         .highlight-box b {{
             color: #FACC15;
+        }}
+
+        h1 {{
+            font-size: 2.4rem !important;
+            font-weight: 800;
+            color: {TEXT_COLOR};
+        }}
+
+        h3 {{
+            font-size: 1.3rem !important;
+            font-weight: 700;
+            color: {TEXT_COLOR};
         }}
 
         footer {{
@@ -97,6 +111,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
 # Centered Title
 st.markdown("<h1 style='text-align: center; margin-bottom: 1rem;'>Retail Dashboard</h1>", unsafe_allow_html=True)
