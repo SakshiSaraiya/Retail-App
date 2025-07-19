@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- Custom CSS Styling ---
+# --- Custom Styling ---
 st.markdown("""
     <style>
     /* Sidebar */
@@ -19,18 +19,32 @@ st.markdown("""
         background-color: #0F172A;
     }
     [data-testid="stSidebar"] * {
-        color: #F8FAFC !important;
+        color: #F1F5F9 !important;
     }
 
-    /* Main page background */
+    /* Main background */
     .block-container {
         background-color: #FFFFFF;
-        padding-top: 2rem;
+        padding: 2rem;
     }
 
     /* Headings and text */
-    h1, h2, h3, h4, h5, h6, label, p, li, span, div {
+    h1, h2, h3, label, p, .stText, .stMarkdown, div {
         color: #0F172A !important;
+    }
+
+    /* Input widgets */
+    .stTextInput, .stNumberInput, .stDateInput, .stSelectbox, .stTextArea, .stFileUploader, .stDataFrame {
+        background-color: #FFFFFF !important;
+        color: #0F172A !important;
+    }
+
+    input, textarea, select {
+        background-color: #FFFFFF !important;
+        color: #0F172A !important;
+        border: 1px solid #E5E7EB;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
     }
 
     /* Buttons */
@@ -38,38 +52,41 @@ st.markdown("""
         background-color: #0F172A;
         color: white;
         border-radius: 8px;
+        padding: 0.5rem 1.2rem;
         font-weight: 600;
     }
     .stButton > button:hover {
         background-color: #1E293B;
     }
 
-    /* Dataframe text */
-    .stDataFrame div {
-        color: #111827 !important;
+    /* File uploader & expander */
+    .stFileUploader, .stExpander {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
     }
 
-    /* Card-like metric containers */
+    /* Metric Cards */
     .metric-card {
-        background-color: #F1F5F9;
-        padding: 1.2rem;
+        background-color: #F8FAFC;
+        padding: 1rem;
         border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         text-align: center;
-        font-weight: 600;
-        font-size: 1.1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+        margin-bottom: 1rem;
     }
+
     </style>
 """, unsafe_allow_html=True)
 
-# --- Title ---
+# --- Page Title ---
 st.markdown("<h1>Expense Management</h1>", unsafe_allow_html=True)
 
 # --- DB Connection ---
 conn = get_connection()
 cursor = conn.cursor()
 
-# --------- Add Manually Section ---------
+# --- Add Expenses Manually ---
 st.markdown("### Add Expenses")
 
 if st.button("➕ Add Manually"):
@@ -98,8 +115,8 @@ if st.button("➕ Add Manually"):
             except Exception as e:
                 st.error(f"Error: {e}")
 
-# --------- CSV Upload Section ---------
-st.markdown("### 📎 Upload Expenses from CSV")
+# --- Upload from CSV ---
+st.markdown("### Upload Expenses from CSV")
 
 sample_csv = pd.DataFrame({
     "date": ["2025-07-01"],
@@ -108,6 +125,7 @@ sample_csv = pd.DataFrame({
     "amount": [5000],
     "description": ["Social Media Campaign"]
 })
+
 with st.expander("View Sample Format"):
     st.dataframe(sample_csv, use_container_width=True)
 
@@ -128,8 +146,8 @@ if uploaded_file:
     except Exception as e:
         st.error(f"Error uploading file: {e}")
 
-# --------- Expense History & Summary ---------
-st.markdown("### 📊 Expense History & Summary")
+# --- Expense History & Summary ---
+st.markdown("### Expense History & Summary")
 
 try:
     df = pd.read_sql("SELECT date, category, expense_type, amount, description FROM expenses ORDER BY date DESC", conn)
@@ -137,16 +155,15 @@ try:
 
     st.dataframe(df, use_container_width=True)
 
-    # Metric cards
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown(f"""<div class='metric-card'>Total Expenses<br><strong>₹ {df['amount'].sum():,.2f}</strong></div>""", unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h3>Total Expenses</h3><h2>₹ {:,.2f}</h2></div>'.format(df['amount'].sum()), unsafe_allow_html=True)
     with col2:
-        st.markdown(f"""<div class='metric-card'>Fixed Costs<br><strong>₹ {df[df['expense_type']=='Fixed']['amount'].sum():,.2f}</strong></div>""", unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h3>Fixed Costs</h3><h2>₹ {:,.2f}</h2></div>'.format(df[df['expense_type']=='Fixed']['amount'].sum()), unsafe_allow_html=True)
     with col3:
-        st.markdown(f"""<div class='metric-card'>Variable Costs<br><strong>₹ {df[df['expense_type']=='Variable']['amount'].sum():,.2f}</strong></div>""", unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h3>Variable Costs</h3><h2>₹ {:,.2f}</h2></div>'.format(df[df['expense_type']=='Variable']['amount'].sum()), unsafe_allow_html=True)
 
-    # --- Monthly Bar Chart ---
+    # --- Monthly Trend Chart ---
     df["month"] = pd.to_datetime(df["date"]).dt.to_period("M").astype(str)
     monthly_chart = df.groupby(["month", "expense_type"])["amount"].sum().reset_index()
 
@@ -155,20 +172,19 @@ try:
         x="month",
         y="amount",
         color="expense_type",
-        title="Monthly Expense Trend",
         barmode="group",
-        text_auto='.2s',
-        color_discrete_sequence=["#1E3A8A", "#60A5FA"]
+        text_auto='.2s'
     )
 
     fig.update_layout(
+        title="Monthly Expense Trend",
         plot_bgcolor='white',
         paper_bgcolor='white',
-        font_color='#0F172A',
-        title_font_size=18,
-        xaxis=dict(showgrid=False, title="Month", color="#0F172A"),
-        yaxis=dict(showgrid=False, title="Amount (₹)", color="#0F172A"),
-        legend_title=dict(text="Expense Type", font=dict(color="#0F172A"))
+        font_color='black',
+        xaxis=dict(showgrid=False, title="Month", tickfont=dict(color='black')),
+        yaxis=dict(showgrid=False, title="Amount (₹)", tickfont=dict(color='black')),
+        legend_title_text="Expense Type",
+        title_font=dict(color='black', size=18)
     )
 
     st.plotly_chart(fig, use_container_width=True)
