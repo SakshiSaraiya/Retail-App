@@ -23,13 +23,28 @@ st.markdown(
         }}
         [data-testid="stSidebar"] > div:first-child {{
             background-color: {SIDEBAR_COLOR};
+            color: white;
+        }}
+        .css-1aumxhk, .css-10trblm, .stMultiSelect {{
+            color: white !important;
         }}
         .metric-card {{
             background-color: {CARD_BG};
-            padding: 1rem;
+            padding: 1.5rem;
             border-radius: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
             text-align: center;
+            margin: 5px;
+        }}
+        .metric-card h4 {{
+            font-size: 1rem;
+            color: #334155;
+            margin-bottom: 0.3rem;
+        }}
+        .metric-card h2 {{
+            font-size: 1.6rem;
+            color: #0F172A;
+            margin-top: 0;
         }}
         .highlight-box {{
             background-color: {HIGHLIGHT_BG};
@@ -89,18 +104,27 @@ total_units_sold = sales_df['quantity_sold'].sum()
 total_revenue = (sales_df['quantity_sold'] * sales_df['selling_price']).sum()
 total_profit = sales_df['profit'].sum()
 
+# Key Metrics (Split into two rows)
 st.markdown("### Key Performance Metrics")
-k1, k2, k3, k4, k5 = st.columns(5)
-k1.markdown(f"<div class='metric-card'><h4>Total Products</h4><h2>{total_products}</h2></div>", unsafe_allow_html=True)
-k2.markdown(f"<div class='metric-card'><h4>Total Stock</h4><h2>{int(total_stock_value)}</h2></div>", unsafe_allow_html=True)
-k3.markdown(f"<div class='metric-card'><h4>Units Sold</h4><h2>{int(total_units_sold)}</h2></div>", unsafe_allow_html=True)
-k4.markdown(f"<div class='metric-card'><h4>Total Revenue</h4><h2>₹ {total_revenue:,.2f}</h2></div>", unsafe_allow_html=True)
-k5.markdown(f"<div class='metric-card'><h4>Total Profit</h4><h2>₹ {total_profit:,.2f}</h2></div>", unsafe_allow_html=True)
+
+k1, k2, k3 = st.columns(3)
+with k1:
+    k1.markdown(f"<div class='metric-card'><h4>Total Products</h4><h2>{total_products}</h2></div>", unsafe_allow_html=True)
+with k2:
+    k2.markdown(f"<div class='metric-card'><h4>Total Stock</h4><h2>{int(total_stock_value)}</h2></div>", unsafe_allow_html=True)
+with k3:
+    k3.markdown(f"<div class='metric-card'><h4>Units Sold</h4><h2>{int(total_units_sold)}</h2></div>", unsafe_allow_html=True)
+
+k4, k5 = st.columns(2)
+with k4:
+    k4.markdown(f"<div class='metric-card'><h4>Total Revenue</h4><h2>₹ {total_revenue:,.2f}</h2></div>", unsafe_allow_html=True)
+with k5:
+    k5.markdown(f"<div class='metric-card'><h4>Total Profit</h4><h2>₹ {total_profit:,.2f}</h2></div>", unsafe_allow_html=True)
 
 # Highlights
 st.markdown("---")
-
 st.markdown("### Highlights")
+
 top_product = sales_df.groupby('product_id')['quantity_sold'].sum().reset_index()
 top_product = top_product.merge(filtered_products, on='product_id', how='left').sort_values(by='quantity_sold', ascending=False).head(1)
 
