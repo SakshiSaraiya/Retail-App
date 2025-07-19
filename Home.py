@@ -15,10 +15,8 @@ st.markdown("""
         background-color: #0F172A;
     }
 
-    [data-testid="stSidebar"] .css-1d391kg,
-    [data-testid="stSidebar"] .css-1v3fvcr,
-    [data-testid="stSidebar"] .css-qri22k {
-        color: #F1F5F9 !important;
+    [data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
     }
 
     .css-1d391kg:hover {
@@ -70,21 +68,17 @@ st.markdown("""
         color: #334155;
     }
 
-    .nav-button {
-        display: inline-block;
+    a.st-emotion-cache-1um2wjb.ef3psqc11 {
         background-color: #0F172A;
-        color: #F1F5F9;
-        font-weight: 600;
-        padding: 0.5rem 1.25rem;
+        color: #FFFFFF !important;
+        padding: 0.5rem 1rem;
         border-radius: 8px;
+        font-weight: 600;
         text-decoration: none;
-        margin-top: 0.5rem;
-        transition: background-color 0.2s ease;
     }
 
-    .nav-button:hover {
-        background-color: #1E3A8A;
-        color: #E0F2FE;
+    a.st-emotion-cache-1um2wjb.ef3psqc11:hover {
+        background-color: #1E293B;
     }
 
     header {visibility: hidden;}
@@ -129,18 +123,18 @@ with col4:
         <div class='feature-card'>
             <h4>Upload New Data</h4>
             <p>Quickly upload product, purchase, or sales records.</p>
-            <a class='nav-button' href='/Upload_Data'>Go to Upload Page</a>
         </div>
     """, unsafe_allow_html=True)
+    st.page_link("pages/0_upload_data.py", label="Go to Upload Page")
 
 with col5:
     st.markdown("""
         <div class='feature-card'>
             <h4>View Financial Dashboard</h4>
             <p>Analyze revenue, expenses, and overall business health.</p>
-            <a class='nav-button' href='/Finance_Dashboard'>Go to Financial Dashboard</a>
         </div>
     """, unsafe_allow_html=True)
+    st.page_link("pages/5_Finance_Dashboard.py", label="Go to Financial Dashboard")
 
 # --- Platform Capabilities ---
 st.markdown("<div class='section-title'>Platform Capabilities</div>", unsafe_allow_html=True)
