@@ -1,204 +1,141 @@
 import streamlit as st
 import pandas as pd
-from db_connector import get_connection
-from datetime import date
 import plotly.express as px
+from datetime import datetime
 
-# --- Page Config ---
-st.set_page_config(
-    page_title="Expense Management",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="Expense Dashboard", layout="wide")
 
-# --- CSS Styling ---
+# Custom CSS
 st.markdown("""
     <style>
-    [data-testid="stSidebar"] {
-        background-color: #0F172A;
-    }
-
-    [data-testid="stSidebar"] .css-1d391kg,
-    [data-testid="stSidebar"] .css-1v3fvcr,
-    [data-testid="stSidebar"] .css-qri22k {
-        color: #F1F5F9 !important;
-    }
-
-    .block-container {
-        background-color: #F9FAFB;
-        padding-top: 2rem;
-    }
-
-    h1, h3 {
-        color: #1E293B !important;
-        font-weight: 700;
-    }
-
-    .stButton > button {
-        background-color: #1E40AF;
-        color: white;
-        border-radius: 8px;
-        padding: 0.5rem 1.2rem;
-        font-weight: 600;
-        transition: 0.3s;
-    }
-
-    .stButton > button:hover {
-        background-color: #1D4ED8;
-        transform: scale(1.02);
-    }
-
-    .stDataFrame div {
-        font-size: 0.95rem;
-        padding: 4px;
-    }
-
-    .metric-card {
-        background-color: #FFFFFF;
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        text-align: center;
-    }
-
-    .metric-card h2 {
-        font-size: 1.25rem;
-        color: #475569;
-    }
-
-    .metric-card p {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #1E293B;
-    }
+        .css-1v3fvcr, .css-1v0mbdj { color: #111 !important; }
+        .stTextInput > div > div > input, .stSelectbox > div > div, .stDateInput > div > div > input {
+            color: black !important;
+        }
+        .stButton > button {
+            background-color: #4a4aff;
+            color: white;
+            font-weight: bold;
+        }
+        .stButton > button:hover {
+            background-color: #3333cc;
+        }
+        .summary-card {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-# --- Title ---
-st.markdown("<h1>Expense Management</h1>", unsafe_allow_html=True)
+st.title("📊 Expense History & Trends")
 
-conn = get_connection()
-cursor = conn.cursor()
+# Upload/initial data
+if "expenses" not in st.session_state:
+    data = {
+        "date": ["2025-07-17", "2025-07-14"],
+        "category": ["Rent", "Utilities"],
+        "expense_type": ["Fixed", "Variable"],
+        "amount": [10000, 3000],
+        "description": ["Monthly rent", "Electricity bill"]
+    }
+    st.session_state.expenses = pd.DataFrame(data)
 
-# --------- Expense Entry Form ---------
-st.markdown("<h3>Add a New Expense</h3>", unsafe_allow_html=True)
+df = st.session_state.expenses
 
-with st.expander("➕ Add Expense Form", expanded=False):
-    with st.form("expense_form"):
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            expense_date = st.date_input("Expense Date", value=date.today())
-        with col2:
-            category = st.selectbox("Category", ["Rent", "Salary", "Utilities", "Marketing", "Transport", "Misc"])
-        with col3:
-            expense_type = st.selectbox("Type", ["Fixed", "Variable"])
+st.dataframe(df, use_container_width=True)
 
-        amount = st.number_input("Amount (₹)", min_value=0.0, format="%.2f")
-        description = st.text_input("Optional Description")
+st.subheader("Summary")
 
-        submit = st.form_submit_button("Add Expense")
+# Summary cards
+total_expense = df["amount"].sum()
+fixed = df[df["expense_type"] == "Fixed"]["amount"].sum()
+variable = df[df["expense_type"] == "Variable"]["amount"].sum()
 
-        if submit:
-            try:
-                cursor.execute("""
-                    INSERT INTO expenses (date, category, expense_type, amount, description)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (expense_date, category, expense_type, amount, description))
-                conn.commit()
-                st.success("Expense added successfully.")
-            except Exception as e:
-                st.error(f"Error: {e}")
+cols = st.columns(3)
+for i, (title, value) in enumerate([("Total Expenses", total_expense), ("Fixed Costs", fixed), ("Variable Costs", variable)]):
+    with cols[i]:
+        st.markdown(f"""
+            <div class="summary-card">
+                <h4>{title}</h4>
+                <h3>₹ {value:,.2f}</h3>
+            </div>
+        """, unsafe_allow_html=True)
 
-# --------- CSV Upload ---------
-st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("<h3>Upload Expenses from CSV</h3>", unsafe_allow_html=True)
+# Monthly bar chart
+st.subheader("Monthly Expense Trend")
+df["date"] = pd.to_datetime(df["date"])
+df["Month"] = df["date"].dt.to_period("M").astype(str)
 
-sample_csv = pd.DataFrame({
-    "date": ["2025-07-01"],
-    "category": ["Marketing"],
-    "expense_type": ["Variable"],
-    "amount": [5000],
-    "description": ["Social Media Campaign"]
-})
-with st.expander("📎 View Sample Format"):
-    st.dataframe(sample_csv, use_container_width=True)
+bar_fig = px.bar(
+    df,
+    x="Month",
+    y="amount",
+    color="expense_type",
+    barmode="group",
+    title="",
+    labels={"amount": "Expense Amount (₹)", "Month": "Month"},
+    color_discrete_sequence=["#4a4aff", "#8888ff"]
+)
 
-uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
+bar_fig.update_layout(
+    xaxis_title="Month",
+    yaxis_title="Expense Amount (₹)",
+    plot_bgcolor='rgba(0,0,0,0)',
+    paper_bgcolor='rgba(0,0,0,0)',
+    font=dict(color="black"),
+    showlegend=True
+)
+bar_fig.update_xaxes(showgrid=False)
+bar_fig.update_yaxes(showgrid=False)
 
-if uploaded_file:
-    try:
-        df_upload = pd.read_csv(uploaded_file)
-        df_upload["date"] = pd.to_datetime(df_upload["date"]).dt.date
+st.plotly_chart(bar_fig, use_container_width=True)
 
-        for _, row in df_upload.iterrows():
-            cursor.execute("""
-                INSERT INTO expenses (date, category, expense_type, amount, description)
-                VALUES (%s, %s, %s, %s, %s)
-            """, tuple(row))
-        conn.commit()
-        st.success("Expenses uploaded successfully.")
-    except Exception as e:
-        st.error(f"Error uploading file: {e}")
+# Add new expense
+st.markdown("---")
+st.title("📝 Expense Management")
+st.subheader("Add a New Expense")
 
-# --------- Expense History & Summary ---------
-st.markdown("<hr>", unsafe_allow_html=True)
-st.markdown("<h3>Expense History & Trends</h3>", unsafe_allow_html=True)
-
-try:
-    df = pd.read_sql("SELECT date, category, expense_type, amount, description FROM expenses ORDER BY date DESC", conn)
-    df["date"] = pd.to_datetime(df["date"]).dt.date
-    st.dataframe(df, use_container_width=True)
-
-    st.markdown("### Summary")
+with st.form("add_expense_form"):
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown(f"""
-            <div class="metric-card">
-                <h2>Total Expenses</h2>
-                <p>₹ {df['amount'].sum():,.2f}</p>
-            </div>
-        """, unsafe_allow_html=True)
+        date = st.date_input("Date", datetime.today())
     with col2:
-        st.markdown(f"""
-            <div class="metric-card">
-                <h2>Fixed Costs</h2>
-                <p>₹ {df[df['expense_type']=='Fixed']['amount'].sum():,.2f}</p>
-            </div>
-        """, unsafe_allow_html=True)
+        category = st.text_input("Category")
     with col3:
-        st.markdown(f"""
-            <div class="metric-card">
-                <h2>Variable Costs</h2>
-                <p>₹ {df[df['expense_type']=='Variable']['amount'].sum():,.2f}</p>
-            </div>
-        """, unsafe_allow_html=True)
+        expense_type = st.selectbox("Type", ["Fixed", "Variable"])
 
-    # Monthly Trend
-    df["month"] = pd.to_datetime(df["date"]).dt.to_period("M").astype(str)
-    monthly_chart = df.groupby(["month", "expense_type"])["amount"].sum().reset_index()
+    amount = st.number_input("Amount (₹)", min_value=0.0, step=100.0)
+    description = st.text_input("Description")
+    submitted = st.form_submit_button("➕ Add Expense")
 
-    fig = px.bar(
-        monthly_chart, 
-        x="month", 
-        y="amount", 
-        color="expense_type",
-        barmode="group",
-        title="Monthly Expense Trend",
-        color_discrete_sequence=["#6366F1", "#60A5FA"]
-    )
+    if submitted:
+        new_row = pd.DataFrame({
+            "date": [date],
+            "category": [category],
+            "expense_type": [expense_type],
+            "amount": [amount],
+            "description": [description]
+        })
+        st.session_state.expenses = pd.concat([st.session_state.expenses, new_row], ignore_index=True)
+        st.success("Expense added!")
 
-    fig.update_traces(marker_line_width=0.5, marker_line_color="rgba(0,0,0,0.1)")
-    fig.update_layout(
-        plot_bgcolor="#F9FAFB",
-        paper_bgcolor="#F9FAFB",
-        font=dict(color="#1E293B", size=14),
-        title_font=dict(size=20, color="#1E293B", family="Arial"),
-        xaxis_title="Month",
-        yaxis_title="Expense Amount (₹)",
-        legend_title_text='Type',
-        bargap=0.15,
-    )
-    st.plotly_chart(fig, use_container_width=True)
+# Upload CSV section
+st.subheader("Upload Expenses from CSV")
+with st.expander("📎 View Sample Format"):
+    st.markdown("Your file must contain: `date`, `category`, `expense_type`, `amount`, `description`")
 
-except Exception as e:
-    st.warning("No expense records found or database error.")
+uploaded = st.file_uploader("Upload CSV", type=["csv"])
+if uploaded:
+    try:
+        new_data = pd.read_csv(uploaded)
+        required_cols = {"date", "category", "expense_type", "amount", "description"}
+        if required_cols.issubset(new_data.columns):
+            st.session_state.expenses = pd.concat([st.session_state.expenses, new_data], ignore_index=True)
+            st.success("File uploaded and merged successfully!")
+        else:
+            st.error("CSV missing required columns.")
+    except Exception as e:
+        st.error(f"Upload error: {e}")
