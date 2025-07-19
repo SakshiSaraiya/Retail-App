@@ -58,36 +58,41 @@ st.markdown(
             color: #0F172A;
         }}
 
+        .highlight-wrapper {{
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }}
+
         .highlight-box {{
             background-color: #1E293B;
             color: white;
-            padding: 0.7rem 1rem;
+            padding: 0.75rem 1rem;
             border-radius: 0.75rem;
-            font-weight: 600;
-            font-size: 1rem;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            font-weight: 500;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             flex: 1;
-            min-width: 180px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            min-width: 200px;
+            max-width: 300px;
             text-align: center;
         }}
 
         .highlight-box b {{
             color: #FACC15;
-            font-size: 1.05rem;
+            font-size: 1rem;
         }}
 
-        .highlight-box span {{
-            font-size: 0.9rem;
+        .highlight-box small {{
+            font-size: 0.85rem;
+            display: block;
+            margin-top: 4px;
         }}
 
         .stAlert {{
-            background-color: #FEF3C7 !important;
+            background-color: #FFF7ED !important;
             color: #92400E !important;
-            border: 1px solid #FACC15 !important;
+            border: 1px solid #FDBA74 !important;
             font-weight: 500;
             border-radius: 0.5rem;
         }}
@@ -110,7 +115,6 @@ st.markdown(
 )
 
 # Continue with rest of logic unchanged from previous update...
-# (the logic for metrics, data pulling, highlights, low stock, and plots remains the same)
 
 
 # Header Banner
