@@ -10,6 +10,15 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+st.markdown("""
+<script>
+    const elements = window.parent.document.querySelectorAll('div[data-baseweb="select"]');
+    elements.forEach(el => {
+        el.style.backgroundColor = 'white';
+        el.style.color = '#0F172A';
+    });
+</script>
+""", unsafe_allow_html=True)
 
 # --- Custom Styling ---
 st.markdown("""
