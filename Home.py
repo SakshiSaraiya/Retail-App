@@ -15,8 +15,14 @@ st.markdown("""
         background-color: #0F172A;
     }
 
-    [data-testid="stSidebar"] * {
+    [data-testid="stSidebar"] .css-1d391kg,
+    [data-testid="stSidebar"] .css-1v3fvcr,
+    [data-testid="stSidebar"] .css-qri22k {
         color: #F1F5F9 !important;
+    }
+
+    .css-1d391kg:hover {
+        color: #38BDF8 !important;
     }
 
     .block-container {
@@ -65,21 +71,20 @@ st.markdown("""
     }
 
     .nav-button {
-        background-color: #3B82F6;
-        color: white;
-        border: none;
-        padding: 0.6rem 1.2rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        transition: background 0.3s ease;
-        margin-top: 0.6rem;
         display: inline-block;
+        background-color: #0F172A;
+        color: #F1F5F9;
+        font-weight: 600;
+        padding: 0.5rem 1.25rem;
+        border-radius: 8px;
         text-decoration: none;
+        margin-top: 0.5rem;
+        transition: background-color 0.2s ease;
     }
 
     .nav-button:hover {
-        background-color: #2563EB;
+        background-color: #1E3A8A;
+        color: #E0F2FE;
     }
 
     header {visibility: hidden;}
@@ -115,7 +120,7 @@ with col3:
         </div>
     """, unsafe_allow_html=True)
 
-# --- Quick Access using Custom Buttons ---
+# --- Quick Access using st.page_link ---
 st.markdown("<div class='section-title'>Quick Access</div>", unsafe_allow_html=True)
 col4, col5 = st.columns(2)
 
@@ -124,7 +129,7 @@ with col4:
         <div class='feature-card'>
             <h4>Upload New Data</h4>
             <p>Quickly upload product, purchase, or sales records.</p>
-            <a href="/Upload_Data" class="nav-button">Go to Upload Page</a>
+            <a class='nav-button' href='/Upload_Data'>Go to Upload Page</a>
         </div>
     """, unsafe_allow_html=True)
 
@@ -133,7 +138,7 @@ with col5:
         <div class='feature-card'>
             <h4>View Financial Dashboard</h4>
             <p>Analyze revenue, expenses, and overall business health.</p>
-            <a href="/Finance_Dashboard" class="nav-button">Go to Financial Dashboard</a>
+            <a class='nav-button' href='/Finance_Dashboard'>Go to Financial Dashboard</a>
         </div>
     """, unsafe_allow_html=True)
 
