@@ -15,7 +15,6 @@ HIGHLIGHT_BG = "#1E293B"
 TEXT_COLOR = "#0F172A"
 FONT_FAMILY = "'Segoe UI', 'Roboto', sans-serif"
 
-# Updated Custom CSS Styling
 st.markdown(
     f"""
     <style>
@@ -24,32 +23,54 @@ st.markdown(
             font-family: {FONT_FAMILY};
         }}
 
+        /* SIDEBAR */
         [data-testid="stSidebar"] > div:first-child {{
             background-color: {SIDEBAR_COLOR};
-            color: #E2E8F0;
+            color: #E5E7EB;
             padding: 1.5rem 1rem;
             border-radius: 0 1rem 1rem 0;
         }}
 
-        .stMultiSelect label, .stSelectbox label, .stSlider label {{
-            color: #E2E8F0 !important;
-            font-weight: 500;
-            font-size: 0.9rem;
+        .stMultiSelect label, .stSelectbox label, .stSlider label,
+        .stTextInput label, .stNumberInput label {{
+            color: #E5E7EB !important;
+            font-size: 0.92rem;
+            font-weight: 600;
         }}
 
+        .st-bw, .st-bs, .st-bv {{
+            font-size: 0.92rem !important;
+            color: white !important;
+        }}
+
+        /* HEADER */
+        h1 {{
+            font-size: 2.8rem !important;
+            font-weight: 900;
+            color: {TEXT_COLOR};
+            margin-bottom: 0.5rem;
+        }}
+
+        h3 {{
+            font-size: 1.5rem !important;
+            font-weight: 700;
+            color: {TEXT_COLOR};
+        }}
+
+        /* METRIC CARDS */
         .metric-card {{
             background-color: {CARD_BG};
             padding: 1rem;
             border-radius: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             width: 100%;
-            min-height: 100px;
-            margin-bottom: 1rem;
+            min-height: 80px;
+            margin-bottom: 0.5rem;
         }}
 
         .metric-card:hover {{
@@ -60,28 +81,26 @@ st.markdown(
         .metric-card h4 {{
             font-size: 0.85rem;
             color: #94A3B8;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.3rem;
             font-weight: 600;
-            text-align: center;
         }}
 
         .metric-card h2 {{
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             color: {TEXT_COLOR};
-            margin-top: 0;
+            margin: 0;
             font-weight: 700;
-            text-align: center;
         }}
 
+        /* HIGHLIGHT CARDS */
         .highlight-box {{
             background-color: {HIGHLIGHT_BG};
             color: white;
-            padding: 1rem;
+            padding: 0.9rem 1rem;
             border-radius: 1rem;
             font-weight: 500;
             font-size: 0.9rem;
             box-shadow: 0 3px 6px rgba(0,0,0,0.08);
-            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -92,21 +111,8 @@ st.markdown(
             color: #FACC15;
         }}
 
-        h1 {{
-            font-size: 2.4rem !important;
-            font-weight: 800;
-            color: {TEXT_COLOR};
-        }}
-
-        h3 {{
-            font-size: 1.3rem !important;
-            font-weight: 700;
-            color: {TEXT_COLOR};
-        }}
-
-        footer {{
-            visibility: hidden;
-        }}
+        /* Hide Footer */
+        footer {{ visibility: hidden; }}
     </style>
     """,
     unsafe_allow_html=True
