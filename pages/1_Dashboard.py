@@ -45,38 +45,36 @@ st.markdown(
             padding: 0 1rem;
         }}
 
-       /* Metric Cards — Reduced Size */
-.metric-card {
-    background-color: #ffffff;
-    padding: 0.6rem;
-    border-radius: 1rem;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: 80px;
-    margin-bottom: 0.5rem;
-}
+    /* Metric Cards */
+    .metric-card {
+        background-color: #ffffff;
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 60px;
+        margin-bottom: 0.4rem;
+    }
 
-.metric-card h4 {
-    font-size: 0.75rem;
-    color: #64748b;
-    margin-bottom: 0.2rem;
-    font-weight: 500;
-    text-align: center;
-}
+    .metric-card h4 {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-bottom: 0.15rem;
+        font-weight: 500;
+        text-align: center;
+    }
 
-.metric-card h2 {
-    font-size: 1.2rem;
-    color: #1f2937;
-    margin-top: 0;
-    font-weight: 700;
-    text-align: center;
-}
-
-
+    .metric-card h2 {
+        font-size: 1rem;
+        color: #1f2937;
+        margin-top: 0;
+        font-weight: 700;
+        text-align: center;
+    }
         /* Heading Updates */
         h1 {{
             font-size: 3.2rem !important;
