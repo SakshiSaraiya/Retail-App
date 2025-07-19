@@ -42,31 +42,38 @@ st.markdown(
 
         .metric-card {{
             background-color: {CARD_BG};
-            padding: 1.4rem 1rem;
-            border-radius: 1rem;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-            height: 110px;
+            width: 100%;
+            min-height: 120px;
+            margin-bottom: 1rem;
         }}
+
         .metric-card:hover {{
             transform: scale(1.02);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }}
+
         .metric-card h4 {{
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: #64748b;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.4rem;
             font-weight: 500;
+            text-align: center;
         }}
+
         .metric-card h2 {{
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             color: {TEXT_COLOR};
             margin-top: 0;
             font-weight: 700;
+            text-align: center;
         }}
 
         .highlight-box {{
@@ -91,8 +98,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-st.title(" Retail Dashboard")
+# Centered Title
+st.markdown("<h1 style='text-align: center; margin-bottom: 1rem;'>Retail Dashboard</h1>", unsafe_allow_html=True)
 
 # Connect to DB
 db = get_connection()
@@ -137,10 +144,12 @@ total_stock_value = stock_merged['live_stock'].sum()
 total_units_sold = sales_df['quantity_sold'].sum()
 total_revenue = (sales_df['quantity_sold'] * sales_df['selling_price']).sum()
 total_profit = sales_df['profit'].sum()
+profit_margin = (total_profit / total_revenue * 100) if total_revenue else 0
 
-# Updated: Metrics Display with 2 clean rows of 3
-st.markdown("###  Key Metrics")
-row1_col1, row1_col2, row1_col3 = st.columns(3)
+# Metrics
+st.markdown("<h3 style='text-align: center; margin-top: -0.5rem;'>Key Metrics</h3>", unsafe_allow_html=True)
+
+row1_col1, row1_col2, row1_col3 = st.columns([1, 1, 1])
 with row1_col1:
     st.markdown(f"<div class='metric-card'><h4>Total Products</h4><h2>{total_products}</h2></div>", unsafe_allow_html=True)
 with row1_col2:
@@ -148,15 +157,13 @@ with row1_col2:
 with row1_col3:
     st.markdown(f"<div class='metric-card'><h4>Units Sold</h4><h2>{int(total_units_sold)}</h2></div>", unsafe_allow_html=True)
 
-row2_col1, row2_col2, row2_col3 = st.columns(3)
+row2_col1, row2_col2, row2_col3 = st.columns([1, 1, 1])
 with row2_col1:
     st.markdown(f"<div class='metric-card'><h4>Total Revenue</h4><h2>₹ {total_revenue:,.2f}</h2></div>", unsafe_allow_html=True)
 with row2_col2:
     st.markdown(f"<div class='metric-card'><h4>Total Profit</h4><h2>₹ {total_profit:,.2f}</h2></div>", unsafe_allow_html=True)
 with row2_col3:
-    profit_margin = (total_profit / total_revenue * 100) if total_revenue else 0
     st.markdown(f"<div class='metric-card'><h4>Profit Margin</h4><h2>{profit_margin:.1f}%</h2></div>", unsafe_allow_html=True)
-
 
 # Highlights
 st.markdown("###  Highlights")
