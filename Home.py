@@ -15,14 +15,8 @@ st.markdown("""
         background-color: #0F172A;
     }
 
-    [data-testid="stSidebar"] .css-1d391kg,
-    [data-testid="stSidebar"] .css-1v3fvcr,
-    [data-testid="stSidebar"] .css-qri22k {
+    [data-testid="stSidebar"] * {
         color: #F1F5F9 !important;
-    }
-
-    .css-1d391kg:hover {
-        color: #38BDF8 !important;
     }
 
     .block-container {
@@ -70,6 +64,24 @@ st.markdown("""
         color: #334155;
     }
 
+    .nav-button {
+        background-color: #3B82F6;
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: background 0.3s ease;
+        margin-top: 0.6rem;
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .nav-button:hover {
+        background-color: #2563EB;
+    }
+
     header {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
@@ -103,7 +115,7 @@ with col3:
         </div>
     """, unsafe_allow_html=True)
 
-# --- Quick Access using st.page_link ---
+# --- Quick Access using Custom Buttons ---
 st.markdown("<div class='section-title'>Quick Access</div>", unsafe_allow_html=True)
 col4, col5 = st.columns(2)
 
@@ -112,18 +124,18 @@ with col4:
         <div class='feature-card'>
             <h4>Upload New Data</h4>
             <p>Quickly upload product, purchase, or sales records.</p>
+            <a href="/Upload_Data" class="nav-button">Go to Upload Page</a>
         </div>
     """, unsafe_allow_html=True)
-    st.page_link("pages/0_upload_data.py", label="Go to Upload Page")
 
 with col5:
     st.markdown("""
         <div class='feature-card'>
             <h4>View Financial Dashboard</h4>
             <p>Analyze revenue, expenses, and overall business health.</p>
+            <a href="/Finance_Dashboard" class="nav-button">Go to Financial Dashboard</a>
         </div>
     """, unsafe_allow_html=True)
-    st.page_link("pages/5_Finance_Dashboard.py", label="Go to Financial Dashboard")
 
 # --- Platform Capabilities ---
 st.markdown("<div class='section-title'>Platform Capabilities</div>", unsafe_allow_html=True)
