@@ -10,15 +10,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-st.markdown("""
-<script>
-    const elements = window.parent.document.querySelectorAll('div[data-baseweb="select"]');
-    elements.forEach(el => {
-        el.style.backgroundColor = 'white';
-        el.style.color = '#0F172A';
-    });
-</script>
-""", unsafe_allow_html=True)
 
 # --- Custom Styling ---
 st.markdown("""
@@ -56,25 +47,6 @@ st.markdown("""
         padding: 0.5rem;
     }
 
-    /* Buttons */
-    .stButton > button {
-        background-color: #0F172A;
-        color: white;
-        border-radius: 8px;
-        padding: 0.5rem 1.2rem;
-        font-weight: 600;
-    }
-    .stButton > button:hover {
-        background-color: #1E293B;
-    }
-
-    /* File uploader & expander */
-    .stFileUploader, .stExpander {
-        background-color: #FFFFFF !important;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-    }
-
     /* Metric Cards */
     .metric-card {
         background-color: #F8FAFC;
@@ -85,6 +57,22 @@ st.markdown("""
         margin-bottom: 1rem;
     }
 
+    /* Add Button */
+    .add-expense-btn {
+        background-color: #F8FAFC;
+        color: #0F172A;
+        font-weight: 600;
+        border: 2px solid #0F172A;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-bottom: 1rem;
+    }
+    .add-expense-btn:hover {
+        background-color: #E2E8F0;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -98,7 +86,19 @@ cursor = conn.cursor()
 # --- Add Expenses Manually ---
 st.markdown("### Add Expenses")
 
-if st.button("➕ Add Manually"):
+add_clicked = st.markdown("""
+    <form action="" method="post">
+        <button class="add-expense-btn" type="submit" name="add">+</button>
+    </form>
+""", unsafe_allow_html=True)
+
+if "add_expense" not in st.session_state:
+    st.session_state["add_expense"] = False
+
+if st.form("trigger_form", clear_on_submit=True).form_submit_button("trigger"):
+    st.session_state["add_expense"] = not st.session_state["add_expense"]
+
+if st.session_state["add_expense"]:
     with st.form("expense_form"):
         col1, col2, col3 = st.columns(3)
         with col1:
