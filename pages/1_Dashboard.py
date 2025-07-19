@@ -14,7 +14,8 @@ CARD_BG = "#FFFFFF"
 HIGHLIGHT_BG = "#1E293B"
 TEXT_COLOR = "#0F172A"
 FONT_FAMILY = "'Segoe UI', 'Roboto', sans-serif"
-# Custom CSS Styling (Updated)
+
+# Custom CSS Styling
 st.markdown(
     f"""
     <style>
@@ -23,21 +24,15 @@ st.markdown(
             font-family: {FONT_FAMILY};
         }}
 
-        /* Sidebar Styling */
         [data-testid="stSidebar"] > div:first-child {{
             background-color: {SIDEBAR_COLOR};
-            color: #f1f5f9 !important;
+            color: white;
             padding: 1.5rem;
             border-radius: 0 1rem 1rem 0;
         }}
 
-        [data-testid="stSidebar"] * {{
-            color: #f1f5f9 !important;
-            font-size: 0.93rem !important;
-        }}
-
         .stMultiSelect label, .stSelectbox label, .stSlider label {{
-            color: #f8fafc !important;
+            color: white !important;
             font-weight: 500;
         }}
 
@@ -45,57 +40,46 @@ st.markdown(
             padding: 0 1rem;
         }}
 
-    /* Metric Cards */
-    .metric-card {
-        background-color: #ffffff;
-        padding: 0.4rem 0.6rem;
-        border-radius: 0.75rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        min-height: 60px;
-        margin-bottom: 0.4rem;
-    }
-
-    .metric-card h4 {
-        font-size: 0.7rem;
-        color: #64748b;
-        margin-bottom: 0.15rem;
-        font-weight: 500;
-        text-align: center;
-    }
-
-    .metric-card h2 {
-        font-size: 1rem;
-        color: #1f2937;
-        margin-top: 0;
-        font-weight: 700;
-        text-align: center;
-    }
-        /* Heading Updates */
-        h1 {{
-            font-size: 3.2rem !important;
-            font-weight: 800 !important;
-            text-align: center;
-            color: #1E293B;
-            margin-bottom: 0.5rem;
+        .metric-card {{
+            background-color: {CARD_BG};
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            width: 100%;
+            min-height: 120px;
+            margin-bottom: 1rem;
         }}
 
-        h3 {{
-            font-size: 1.7rem !important;
-            text-align: center;
-            color: #475569;
-            margin-bottom: 2rem;
+        .metric-card:hover {{
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }}
 
-        /* Highlight Boxes */
+        .metric-card h4 {{
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.4rem;
+            font-weight: 500;
+            text-align: center;
+        }}
+
+        .metric-card h2 {{
+            font-size: 1.6rem;
+            color: {TEXT_COLOR};
+            margin-top: 0;
+            font-weight: 700;
+            text-align: center;
+        }}
+
         .highlight-box {{
             background-color: {HIGHLIGHT_BG};
             color: white;
-            padding: 1rem 0.8rem;
+            padding: 1.2rem 1rem;
             border-radius: 1rem;
             font-weight: 500;
             font-size: 0.93rem;
