@@ -19,10 +19,6 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    .css-1d391kg:hover {
-        color: #38BDF8 !important;
-    }
-
     .block-container {
         background-color: #F8FAFC;
         padding-top: 2rem;
@@ -68,17 +64,18 @@ st.markdown("""
         color: #334155;
     }
 
-    a.st-emotion-cache-1um2wjb.ef3psqc11 {
-        background-color: #0F172A;
-        color: #FFFFFF !important;
+    .stButton>button {
+        background-color: #0F172A !important;
+        color: white !important;
+        border: none;
         padding: 0.5rem 1rem;
         border-radius: 8px;
         font-weight: 600;
-        text-decoration: none;
+        cursor: pointer;
     }
 
-    a.st-emotion-cache-1um2wjb.ef3psqc11:hover {
-        background-color: #1E293B;
+    .stButton>button:hover {
+        background-color: #1E293B !important;
     }
 
     header {visibility: hidden;}
