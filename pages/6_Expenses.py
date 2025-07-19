@@ -1,170 +1,109 @@
 import streamlit as st
 import pandas as pd
-from db_connector import get_connection
-from datetime import date
 import plotly.express as px
+import os
+from datetime import datetime
+from db_connector import get_connection
 
-# --- Page Config ---
-st.set_page_config(
-    page_title="Expense Management",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+st.set_page_config(page_title="💸 Expenses", layout="wide")
+st.title("Expense Management")
 
-# --- CSS Styling ---
-st.markdown("""
-    <style>
-    [data-testid="stSidebar"] {
-        background-color: #0F172A;
-    }
-    [data-testid="stSidebar"] * {
-        color: #F1F5F9 !important;
-    }
-    .block-container {
-        background-color: #FFFFFF;
-        padding-top: 2rem;
-    }
-    h1, h3, h2, label, p, div, span, .markdown-text-container {
-        color: #0F172A !important;
-    }
-    .stButton > button {
-        background-color: #0F172A;
-        color: white;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-        font-weight: 600;
-    }
-    .stButton > button:hover {
-        background-color: #1E293B;
-    }
-    .stDataFrame div {
-        font-size: 0.92rem;
-        color: black !important;
-    }
-    .metric-container {
-        background-color: #F8FAFC;
-        padding: 1rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-        margin-bottom: 1rem;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# --- Title ---
-st.markdown("<h1>Expense Management</h1>", unsafe_allow_html=True)
-
-# --- DB Connection ---
 conn = get_connection()
-cursor = conn.cursor()
 
-# --------- Add Manually Section ---------
-st.markdown("### Add Expenses")
-
-if st.button("Add Manually"):
-    with st.form("expense_form"):
+# ----------------------------------
+# Expense Input Form (Light Card Style)
+# ----------------------------------
+st.subheader("Add Expenses")
+with st.container(border=True):
+    with st.form("add_expense_form"):
         col1, col2, col3 = st.columns(3)
         with col1:
-            expense_date = st.date_input("Expense Date", value=date.today())
+            date = st.date_input("Date", value=datetime.today())
         with col2:
-            category = st.selectbox("Category", ["Rent", "Salary", "Utilities", "Marketing", "Transport", "Misc"])
+            category = st.text_input("Category")
         with col3:
-            expense_type = st.selectbox("Type", ["Fixed", "Variable"])
+            expense_type = st.selectbox("Expense Type", ["Fixed", "Variable"])
 
-        amount = st.number_input("Amount (₹)", min_value=0.0, format="%.2f")
-        description = st.text_input("Optional Description")
+        amount = st.number_input("Amount", min_value=0.0, step=100.0)
+        description = st.text_input("Description")
+        submitted = st.form_submit_button("Add Expense")
 
-        submit = st.form_submit_button("Add Expense")
-
-        if submit:
-            try:
-                cursor.execute("""
-                    INSERT INTO expenses (date, category, expense_type, amount, description)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (expense_date, category, expense_type, amount, description))
-                conn.commit()
-                st.success("Expense added successfully.")
-            except Exception as e:
-                st.error(f"Error: {e}")
-
-# --------- CSV Upload Section ---------
-st.markdown("### Upload Expenses from CSV")
-
-sample_csv = pd.DataFrame({
-    "date": ["2025-07-01"],
-    "category": ["Marketing"],
-    "expense_type": ["Variable"],
-    "amount": [5000],
-    "description": ["Social Media Campaign"]
-})
-with st.expander("View Sample Format"):
-    st.dataframe(sample_csv, use_container_width=True)
-
-uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
-
-if uploaded_file:
-    try:
-        df_upload = pd.read_csv(uploaded_file)
-        df_upload["date"] = pd.to_datetime(df_upload["date"]).dt.date
-
-        for _, row in df_upload.iterrows():
-            cursor.execute("""
+        if submitted:
+            query = """
                 INSERT INTO expenses (date, category, expense_type, amount, description)
                 VALUES (%s, %s, %s, %s, %s)
-            """, tuple(row))
-        conn.commit()
+            """
+            conn.execute(query, (date, category, expense_type, amount, description))
+            conn.commit()
+            st.success("Expense added successfully.")
+
+# ----------------------------------
+# Upload Expenses from CSV
+# ----------------------------------
+st.subheader("Upload Expenses from CSV")
+with st.expander("View Sample Format"):
+    st.markdown("""**CSV Columns**: `date`, `category`, `expense_type`, `amount`, `description`
+    
+    **Example**:
+    ```csv
+    2025-07-01,Rent,Fixed,10000,Office Rent
+    2025-07-02,Utilities,Variable,2000,Electricity
+    ```
+    """)
+
+uploaded_file = st.file_uploader("Upload a CSV file", type="csv")
+if uploaded_file is not None:
+    try:
+        df_upload = pd.read_csv(uploaded_file)
+        df_upload.to_sql("expenses", conn, if_exists="append", index=False)
         st.success("Expenses uploaded successfully.")
     except Exception as e:
-        st.error(f"Error uploading file: {e}")
+        st.error(f"Error: {e}")
 
-# --------- Expense History & Summary ---------
-st.markdown("### Expense History & Summary")
+# ----------------------------------
+# Expense History & Summary
+# ----------------------------------
+st.subheader("Expense History & Summary")
+expenses_df = pd.read_sql("SELECT * FROM expenses ORDER BY date DESC", conn)
+st.dataframe(expenses_df, use_container_width=True, hide_index=True)
 
-try:
-    df = pd.read_sql("SELECT date, category, expense_type, amount, description FROM expenses ORDER BY date DESC", conn)
-    df["date"] = pd.to_datetime(df["date"]).dt.date
+# Totals Summary
+total_expense = expenses_df["amount"].sum()
+fixed_total = expenses_df[expenses_df["expense_type"] == "Fixed"]["amount"].sum()
+variable_total = expenses_df[expenses_df["expense_type"] == "Variable"]["amount"].sum()
 
-    st.dataframe(df, use_container_width=True)
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("Total Expenses", f"₹ {total_expense:,.2f}")
+with col2:
+    st.metric("Fixed Costs", f"₹ {fixed_total:,.2f}")
+with col3:
+    st.metric("Variable Costs", f"₹ {variable_total:,.2f}")
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown("<div class='metric-container'>", unsafe_allow_html=True)
-        st.metric("Total Expenses", f"₹ {df['amount'].sum():,.2f}")
-        st.markdown("</div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown("<div class='metric-container'>", unsafe_allow_html=True)
-        st.metric("Fixed Costs", f"₹ {df[df['expense_type']=='Fixed']['amount'].sum():,.2f}")
-        st.markdown("</div>", unsafe_allow_html=True)
-    with col3:
-        st.markdown("<div class='metric-container'>", unsafe_allow_html=True)
-        st.metric("Variable Costs", f"₹ {df[df['expense_type']=='Variable']['amount'].sum():,.2f}")
-        st.markdown("</div>", unsafe_allow_html=True)
+# ----------------------------------
+# Monthly Expense Trend
+# ----------------------------------
+st.subheader("Monthly Expense Trend")
+expenses_df["month"] = pd.to_datetime(expenses_df["date"]).dt.to_period("M").astype(str)
+monthly_expenses = expenses_df.groupby(["month", "expense_type"]).agg({"amount": "sum"}).reset_index()
 
-    # --- Monthly Bar Chart ---
-    df["month"] = pd.to_datetime(df["date"]).dt.to_period("M").astype(str)
-    monthly_chart = df.groupby(["month", "expense_type"])["amount"].sum().reset_index()
-
-    fig = px.bar(
-        monthly_chart,
-        x="month",
-        y="amount",
-        color="expense_type",
-        barmode="group",
-        text_auto='.2s'
-    )
-
-    fig.update_layout(
-        plot_bgcolor='white',
-        paper_bgcolor='white',
-        font_color='#F8FAFC',
-        xaxis=dict(showgrid=False, title="Month", color='#F8FAFC'),
-        yaxis=dict(showgrid=False, title="Amount (₹)", color='#F8FAFC'),
-        legend_title_text="Expense Type",
-        title="Monthly Expense Trend",
-        title_font_size=18
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-except Exception as e:
-    st.warning(f"No data or error loading data: {e}")
+fig = px.bar(
+    monthly_expenses,
+    x="month",
+    y="amount",
+    color="expense_type",
+    barmode="group",
+    text_auto=".2s",
+    title="Monthly Expense by Type"
+)
+fig.update_layout(
+    xaxis_title="Month",
+    yaxis_title="Amount (₹)",
+    legend_title="Expense Type",
+    font=dict(size=14),
+    title_font=dict(size=18),
+    plot_bgcolor="#fff",
+    paper_bgcolor="#fff"
+)
+fig.update_traces(textposition="outside")
+st.plotly_chart(fig, use_container_width=True)
