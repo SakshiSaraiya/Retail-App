@@ -1,4 +1,4 @@
-# 📊 Retail Dashboard - Professionally Styled & Enhanced
+# 📊 Retail Dashboard - Professionally Styled & Enhanced 
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -28,27 +28,33 @@ st.markdown(
             background-color: {SIDEBAR_COLOR};
             color: white;
             padding: 1.5rem;
+            border-radius: 0 1rem 1rem 0;
         }}
 
         .stMultiSelect label, .stSelectbox label, .stSlider label {{
             color: white !important;
+            font-weight: 500;
+        }}
+
+        .stSlider > div[data-baseweb="slider"] {{
+            padding: 0 1rem;
         }}
 
         .metric-card {{
             background-color: {CARD_BG};
             padding: 1.4rem 1rem;
             border-radius: 1rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: transform 0.2s ease;
-            height: 100px;
+            transition: all 0.3s ease;
+            height: 110px;
         }}
         .metric-card:hover {{
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }}
         .metric-card h4 {{
             font-size: 0.95rem;
@@ -57,19 +63,24 @@ st.markdown(
             font-weight: 500;
         }}
         .metric-card h2 {{
-            font-size: 1.7rem;
+            font-size: 1.8rem;
             color: {TEXT_COLOR};
             margin-top: 0;
-            font-weight: 600;
+            font-weight: 700;
         }}
 
         .highlight-box {{
             background-color: {HIGHLIGHT_BG};
             color: white;
-            padding: 1.2rem;
+            padding: 1.2rem 1rem;
             border-radius: 1rem;
             font-weight: 500;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            font-size: 0.93rem;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+        }}
+
+        .highlight-box b {{
+            color: #FACC15;
         }}
 
         footer {{
@@ -80,7 +91,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.title("📊 Retail Dashboard")
+
+st.title(" Retail Dashboard")
 
 # Connect to DB
 db = get_connection()
