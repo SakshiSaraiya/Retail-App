@@ -156,9 +156,9 @@ try:
     fig.update_layout(
         plot_bgcolor='white',
         paper_bgcolor='white',
-        font_color='#1E293B',
-        xaxis=dict(showgrid=False, title="Month", color='#1E293B'),
-        yaxis=dict(showgrid=False, title="Amount (₹)", color='#1E293B'),
+        font_color='#F8FAFC',
+        xaxis=dict(showgrid=False, title="Month", color='#F8FAFC'),
+        yaxis=dict(showgrid=False, title="Amount (₹)", color='#F8FAFC'),
         legend_title_text="Expense Type",
         title="Monthly Expense Trend",
         title_font_size=18
