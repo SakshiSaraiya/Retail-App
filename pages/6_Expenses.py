@@ -24,34 +24,52 @@ st.markdown("""
         color: #F1F5F9 !important;
     }
 
-    .css-1d391kg:hover {
-        color: #38BDF8 !important;
-    }
-
     .block-container {
-        background-color: #F8FAFC;
+        background-color: #F9FAFB;
         padding-top: 2rem;
     }
 
     h1, h3 {
-        color: #0F172A !important;
-        font-weight: 800;
+        color: #1E293B !important;
+        font-weight: 700;
     }
 
     .stButton > button {
-        background-color: #0F172A;
+        background-color: #1E40AF;
         color: white;
         border-radius: 8px;
-        padding: 0.5rem 1rem;
+        padding: 0.5rem 1.2rem;
         font-weight: 600;
+        transition: 0.3s;
     }
 
     .stButton > button:hover {
-        background-color: #1E293B;
+        background-color: #1D4ED8;
+        transform: scale(1.02);
     }
 
     .stDataFrame div {
-        font-size: 0.92rem;
+        font-size: 0.95rem;
+        padding: 4px;
+    }
+
+    .metric-card {
+        background-color: #FFFFFF;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+
+    .metric-card h2 {
+        font-size: 1.25rem;
+        color: #475569;
+    }
+
+    .metric-card p {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1E293B;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -133,16 +151,53 @@ try:
 
     st.markdown("### Summary")
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total Expenses", f"₹ {df['amount'].sum():,.2f}")
-    col2.metric("Fixed Costs", f"₹ {df[df['expense_type']=='Fixed']['amount'].sum():,.2f}")
-    col3.metric("Variable Costs", f"₹ {df[df['expense_type']=='Variable']['amount'].sum():,.2f}")
+    with col1:
+        st.markdown(f"""
+            <div class="metric-card">
+                <h2>Total Expenses</h2>
+                <p>₹ {df['amount'].sum():,.2f}</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+            <div class="metric-card">
+                <h2>Fixed Costs</h2>
+                <p>₹ {df[df['expense_type']=='Fixed']['amount'].sum():,.2f}</p>
+            </div>
+        """, unsafe_allow_html=True)
+    with col3:
+        st.markdown(f"""
+            <div class="metric-card">
+                <h2>Variable Costs</h2>
+                <p>₹ {df[df['expense_type']=='Variable']['amount'].sum():,.2f}</p>
+            </div>
+        """, unsafe_allow_html=True)
 
     # Monthly Trend
     df["month"] = pd.to_datetime(df["date"]).dt.to_period("M").astype(str)
     monthly_chart = df.groupby(["month", "expense_type"])["amount"].sum().reset_index()
 
-    fig = px.bar(monthly_chart, x="month", y="amount", color="expense_type",
-                 title="Monthly Expense Trend", barmode="group")
+    fig = px.bar(
+        monthly_chart, 
+        x="month", 
+        y="amount", 
+        color="expense_type",
+        barmode="group",
+        title="Monthly Expense Trend",
+        color_discrete_sequence=["#6366F1", "#60A5FA"]
+    )
+
+    fig.update_traces(marker_line_width=0.5, marker_line_color="rgba(0,0,0,0.1)")
+    fig.update_layout(
+        plot_bgcolor="#F9FAFB",
+        paper_bgcolor="#F9FAFB",
+        font=dict(color="#1E293B", size=14),
+        title_font=dict(size=20, color="#1E293B", family="Arial"),
+        xaxis_title="Month",
+        yaxis_title="Expense Amount (₹)",
+        legend_title_text='Type',
+        bargap=0.15,
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 except Exception as e:
