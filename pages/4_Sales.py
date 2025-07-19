@@ -4,6 +4,43 @@ import plotly.express as px
 from db_connector import get_connection
 
 st.set_page_config(page_title="📈 Sales", layout="wide")
+
+# -------------------------
+# Custom Styling
+# -------------------------
+st.markdown("""
+    <style>
+    body {
+        background-color: #F8FAFC;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    [data-testid="stSidebar"] {
+        background-color: #0F172A;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: #FFFFFF !important;
+        font-size: 0.95rem;
+    }
+
+    h1, h2, h3, h4, h5, h6, p {
+        color: #0F172A;
+    }
+
+    .dataframe tbody td {
+        font-size: 0.95rem;
+        color: #1F2937;
+    }
+    .dataframe thead th {
+        background-color: #CBD5E1;
+        font-weight: bold;
+        color: #1E293B;
+        font-size: 0.95rem;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("📈 Sales Overview")
 
 # -------------------------
@@ -22,64 +59,30 @@ except Exception as e:
     st.error(f"❌ Error loading data: {e}")
     st.stop()
 
-# -------------------------
-# Normalize product_id across all tables
-# -------------------------
+# Normalize product_id
 sales['product_id'] = sales['product_id'].astype(str).str.strip().str.upper()
 products['product_id'] = products['product_id'].astype(str).str.strip().str.upper()
 purchases['product_id'] = purchases['product_id'].astype(str).str.strip().str.upper()
 
-# -------------------------
-# Merge product info from product and purchases
-# -------------------------
+# Merge product info
 sales = sales.merge(products, on='product_id', how='left')
 sales = sales.merge(purchases, on='product_id', how='left')
-
-# Fallback logic for product_name and cost_price
 sales['product_name'] = sales['product_name'].fillna(sales['product_name_purchases'])
 
-# -------------------------
-# DEBUG: Show raw data
-# -------------------------
-if st.sidebar.checkbox("Show Raw Data", key="debug"):
-    st.subheader("🔍 Raw Sales Data")
-    st.write("Sales Table", sales)
-    st.write("Products Table", products)
-    st.write("Purchases Table", purchases)
+# Parse sales_date
+sales['sales_date'] = pd.to_datetime(sales['sales_date'], errors='coerce')
 
-# -------------------------
-# Check for missing merges
-# -------------------------
-if sales['product_name'].isnull().all():
-    st.warning("⚠️ No matching product_id found in product or purchases table.")
-if sales['cost_price'].isnull().all():
-    st.warning("⚠️ No matching cost_price found in purchases table.")
-
-# -------------------------
-# Parse sales_date column
-# -------------------------
-try:
-    sales['sales_date'] = pd.to_datetime(sales['sales_date'], errors='coerce')
-except Exception as e:
-    st.warning(f"⚠️ Couldn't parse sales_date column: {e}")
-
-# -------------------------
-# Calculate revenue and profit
-# -------------------------
+# Calculate revenue & profit
 sales['revenue'] = sales['quantity_sold'] * sales['selling_price']
 sales['profit'] = sales['quantity_sold'] * (sales['selling_price'] - sales['cost_price'])
 
 # -------------------------
-# Filter Section
+# Sidebar Filters
 # -------------------------
 st.sidebar.header("🔍 Filter Sales")
-
-all_products = sales['product_name'].dropna().unique()
-product_filter = st.sidebar.multiselect("Product Name", all_products, default=list(all_products))
-
+product_filter = st.sidebar.multiselect("Product Name", sales['product_name'].dropna().unique(), default=sales['product_name'].dropna().unique())
 shipped_filter = st.sidebar.selectbox("Shipped Status", ["All"] + sales['shipped_status'].dropna().unique().tolist())
 payment_filter = st.sidebar.selectbox("Payment Status", ["All"] + sales['payment_status'].dropna().unique().tolist())
-
 start_date = st.sidebar.date_input("Start Date", value=sales['sales_date'].min())
 end_date = st.sidebar.date_input("End Date", value=sales['sales_date'].max())
 
@@ -91,10 +94,8 @@ filtered_sales = sales[
     (sales['sales_date'] >= pd.to_datetime(start_date)) &
     (sales['sales_date'] <= pd.to_datetime(end_date))
 ]
-
 if shipped_filter != "All":
     filtered_sales = filtered_sales[filtered_sales['shipped_status'] == shipped_filter]
-
 if payment_filter != "All":
     filtered_sales = filtered_sales[filtered_sales['payment_status'] == payment_filter]
 
@@ -112,21 +113,16 @@ k4.metric("🛍️ Orders", len(filtered_sales))
 # Display Sales Data
 # -------------------------
 st.markdown("### 📋 Sales Transactions")
-
 if filtered_sales.empty:
     st.warning("⚠️ No matching sales records found with current filters.")
 else:
-    st.dataframe(
-        filtered_sales[['sale_id', 'sales_date', 'product_name', 'quantity_sold', 'revenue', 'profit', 'shipped_status', 'payment_status']],
-        use_container_width=True
-    )
+    st.dataframe(filtered_sales[['sale_id', 'sales_date', 'product_name', 'quantity_sold', 'revenue', 'profit', 'shipped_status', 'payment_status']], use_container_width=True)
 
 # -------------------------
 # Top Products Section
 # -------------------------
 st.markdown("---")
 st.markdown("### 🏆 Top-Selling Products")
-
 top_n = st.slider("Top N Products", 5, 20, 10)
 top_products = filtered_sales.groupby('product_name').agg({
     'quantity_sold': 'sum',
@@ -137,27 +133,11 @@ top_products = filtered_sales.groupby('product_name').agg({
 col1, col2 = st.columns(2)
 
 with col1:
-    fig1 = px.bar(
-        top_products,
-        x='product_name',
-        y='quantity_sold',
-        title=f"Top {top_n} Products by Quantity",
-        color='quantity_sold',
-        template='plotly_dark',
-        animation_frame=None
-    )
+    fig1 = px.bar(top_products, x='product_name', y='quantity_sold', title=f"Top {top_n} Products by Quantity", color='quantity_sold', color_continuous_scale='Blues')
     st.plotly_chart(fig1, use_container_width=True)
 
 with col2:
-    fig2 = px.bar(
-        top_products,
-        x='product_name',
-        y='revenue',
-        title=f"Top {top_n} Products by Revenue",
-        color='revenue',
-        template='plotly_dark',
-        animation_frame=None
-    )
+    fig2 = px.bar(top_products, x='product_name', y='revenue', title=f"Top {top_n} Products by Revenue", color='revenue', color_continuous_scale='Viridis')
     st.plotly_chart(fig2, use_container_width=True)
 
 # -------------------------
@@ -165,114 +145,38 @@ with col2:
 # -------------------------
 st.markdown("---")
 st.markdown("### 📆 Monthly Sales Performance")
+monthly_grouped = filtered_sales.copy()
+monthly_grouped['month'] = monthly_grouped['sales_date'].dt.to_period('M').astype(str)
+monthly_agg = monthly_grouped.groupby('month')[['quantity_sold', 'revenue', 'profit']].sum().reset_index()
 
-sales_monthly = filtered_sales.copy()
-sales_monthly['month'] = sales_monthly['sales_date'].dt.to_period('M').astype(str)
-monthly_grouped = sales_monthly.groupby('month')[['quantity_sold', 'revenue', 'profit']].sum().reset_index()
-
-tab1, tab2, tab3 = st.tabs(["📦 Quantity", "💰 Revenue", "📈 Profit"])
-
-with tab1:
-    fig3 = px.line(
-        monthly_grouped,
-        x='month',
-        y='quantity_sold',
-        title="Monthly Units Sold",
-        markers=True,
-        template='plotly_dark',
-        animation_frame=None
-    )
-    st.plotly_chart(fig3, use_container_width=True)
-
-with tab2:
-    fig4 = px.line(
-        monthly_grouped,
-        x='month',
-        y='revenue',
-        title="Monthly Revenue",
-        markers=True,
-        template='plotly_dark',
-        animation_frame=None
-    )
-    st.plotly_chart(fig4, use_container_width=True)
-
-with tab3:
-    fig5 = px.line(
-        monthly_grouped,
-        x='month',
-        y='profit',
-        title="Monthly Profit",
-        markers=True,
-        template='plotly_dark',
-        animation_frame=None
-    )
-    st.plotly_chart(fig5, use_container_width=True)
+st.plotly_chart(px.line(monthly_agg, x='month', y='quantity_sold', title="Monthly Units Sold", markers=True, color_discrete_sequence=['#0F172A']), use_container_width=True)
+st.plotly_chart(px.line(monthly_agg, x='month', y='revenue', title="Monthly Revenue", markers=True, color_discrete_sequence=['#059669']), use_container_width=True)
+st.plotly_chart(px.line(monthly_agg, x='month', y='profit', title="Monthly Profit", markers=True, color_discrete_sequence=['#EF4444']), use_container_width=True)
 
 # -------------------------
-# 🔮 Forecasting Sales by Product
+# 🔮 Forecasting
 # -------------------------
 st.markdown("---")
-st.markdown("### 🔮 Sales Forecast by Product")
-
-# Merge product_name from purchases into sales for dropdown
-sales_forecast = pd.merge(
-    sales,
-    purchases[['product_id', 'product_name']],
-    on='product_id',
-    how='left'
-)
-
-# Check and clean dates
+st.markdown("### 🔮 Sales Forecast")
+sales_forecast = sales.copy()
 sales_forecast['sales_date'] = pd.to_datetime(sales_forecast['sales_date'], errors='coerce')
+sales_forecast['month'] = sales_forecast['sales_date'].dt.to_period('M').astype(str)
 
-# Let user select product
-available_products = sales_forecast['product_name'].dropna().unique()
-selected_product = st.selectbox("Select Product for Forecast", sorted(available_products))
-
-# Filter sales for selected product
+selected_product = st.selectbox("Select Product", sorted(sales_forecast['product_name'].dropna().unique()))
 product_sales = sales_forecast[sales_forecast['product_name'] == selected_product].copy()
-
-# Group monthly sales
-product_sales['month'] = product_sales['sales_date'].dt.to_period('M').astype(str)
 monthly_sales = product_sales.groupby('month')['quantity_sold'].sum().reset_index()
 monthly_sales['month'] = pd.to_datetime(monthly_sales['month'])
 monthly_sales = monthly_sales.sort_values('month')
+monthly_sales['forecast_qty'] = monthly_sales['quantity_sold'].rolling(3, min_periods=1).mean()
 
-# Calculate 3-month moving average as forecast
-monthly_sales['forecast_qty'] = monthly_sales['quantity_sold'].rolling(window=3, min_periods=1).mean()
-
-# Forecast next 3 months with last moving average value
-last_month = monthly_sales['month'].max()
-forecast_months = pd.date_range(start=last_month + pd.offsets.MonthBegin(), periods=3, freq='MS')
+future_months = pd.date_range(start=monthly_sales['month'].max() + pd.offsets.MonthBegin(), periods=3, freq='MS')
 last_forecast = monthly_sales['forecast_qty'].iloc[-1]
-
-future_forecast = pd.DataFrame({
-    'month': forecast_months,
-    'quantity_sold': [None]*3,
+future_df = pd.DataFrame({
+    'month': future_months,
     'forecast_qty': [last_forecast]*3
 })
+forecast_df = pd.concat([monthly_sales[['month', 'quantity_sold', 'forecast_qty']], future_df], ignore_index=True)
 
-# Combine past + future
-forecast_df = pd.concat([monthly_sales, future_forecast], ignore_index=True)
-
-# Plotting
-fig = px.line(
-    forecast_df,
-    x='month',
-    y='forecast_qty',
-    title=f"📈 Forecasted Sales for '{selected_product}'",
-    labels={'forecast_qty': 'Forecasted Quantity'},
-    markers=True,
-    template='plotly_dark'
-)
-
-# Add actual sales line
-fig.add_scatter(
-    x=monthly_sales['month'],
-    y=monthly_sales['quantity_sold'],
-    mode='lines+markers',
-    name='Actual Quantity',
-    line=dict(color='orange')
-)
-
+fig = px.line(forecast_df, x='month', y='forecast_qty', title=f"Forecast for {selected_product}", markers=True, color_discrete_sequence=['#6366F1'])
+fig.add_scatter(x=monthly_sales['month'], y=monthly_sales['quantity_sold'], mode='lines+markers', name='Actual', line=dict(color='orange'))
 st.plotly_chart(fig, use_container_width=True)
