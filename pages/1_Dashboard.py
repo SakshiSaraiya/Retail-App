@@ -14,44 +14,71 @@ CARD_BG = "#FFFFFF"
 HIGHLIGHT_BG = "#0F172A"
 TEXT_COLOR = "#0F172A"
 
+# Custom CSS Styling Block
 st.markdown(
     f"""
     <style>
+        /* Overall Background and Text */
         .main {{
             background-color: {BG_COLOR};
             color: {TEXT_COLOR};
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
         }}
+
+        /* Sidebar Background and Text */
         [data-testid="stSidebar"] > div:first-child {{
             background-color: {SIDEBAR_COLOR};
             color: white;
+            padding: 1.5rem;
         }}
+
+        /* Sidebar Select/Multiselect Fix */
         .css-1aumxhk, .css-10trblm, .stMultiSelect {{
             color: white !important;
         }}
+
+        /* Metric Cards Styling */
         .metric-card {{
             background-color: {CARD_BG};
-            padding: 1.5rem;
+            padding: 1.4rem 1rem;
             border-radius: 1rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            text-align: center;
-            margin: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }}
+        .metric-card:hover {{
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         }}
         .metric-card h4 {{
-            font-size: 1rem;
-            color: #334155;
+            font-size: 0.95rem;
+            color: #64748b;
             margin-bottom: 0.3rem;
+            font-weight: 500;
         }}
         .metric-card h2 {{
-            font-size: 1.6rem;
+            font-size: 1.8rem;
             color: #0F172A;
             margin-top: 0;
+            font-weight: 600;
         }}
+
+        /* Highlight Boxes */
         .highlight-box {{
             background-color: {HIGHLIGHT_BG};
             color: white;
-            padding: 1rem;
+            padding: 1.2rem;
             border-radius: 1rem;
             font-weight: 500;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }}
+
+        /* Hide Streamlit default footer */
+        footer {{
+            visibility: hidden;
         }}
     </style>
     """,
@@ -104,9 +131,8 @@ total_units_sold = sales_df['quantity_sold'].sum()
 total_revenue = (sales_df['quantity_sold'] * sales_df['selling_price']).sum()
 total_profit = sales_df['profit'].sum()
 
-# Key Metrics (Split into two rows)
+# Metric Cards in 2 Rows
 st.markdown("### Key Performance Metrics")
-
 k1, k2, k3 = st.columns(3)
 with k1:
     k1.markdown(f"<div class='metric-card'><h4>Total Products</h4><h2>{total_products}</h2></div>", unsafe_allow_html=True)
