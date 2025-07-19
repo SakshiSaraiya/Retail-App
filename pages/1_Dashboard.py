@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from db_connector import get_connection
 
 # Page Config
@@ -242,10 +243,13 @@ if not low_stock.empty:
 else:
     st.success("✅ All products have sufficient stock.")
 
-# Monthly Sales Chart
-st.markdown("###  Monthly Sales Overview")
+
+# ----------------------------- Monthly Sales Overview -----------------------------
+st.markdown("### 📈 Monthly Sales Overview")
+
 sales_df = sales_df.dropna(subset=['sales_date'])
 sales_df['month'] = sales_df['sales_date'].dt.to_period('M').astype(str)
+
 monthly_metrics = sales_df.groupby('month').agg({
     'quantity_sold': 'sum',
     'selling_price': 'mean',
@@ -253,40 +257,88 @@ monthly_metrics = sales_df.groupby('month').agg({
 }).reset_index()
 monthly_metrics['revenue'] = monthly_metrics['quantity_sold'] * monthly_metrics['selling_price']
 
-fig = px.line(monthly_metrics, x='month', y=['quantity_sold', 'revenue', 'profit'],
-              color_discrete_sequence=['#1D4ED8', '#10B981', '#F59E0B'],
-              markers=True, title="Monthly Sales Overview")
+fig = go.Figure()
+
+# Quantity Sold
+fig.add_trace(go.Scatter(
+    x=monthly_metrics['month'],
+    y=monthly_metrics['quantity_sold'],
+    mode='lines+markers',
+    name='Quantity Sold',
+    line=dict(color='#1D4ED8', width=3),
+    marker=dict(size=7)
+))
+
+# Revenue
+fig.add_trace(go.Scatter(
+    x=monthly_metrics['month'],
+    y=monthly_metrics['revenue'],
+    mode='lines+markers',
+    name='Revenue',
+    line=dict(color='#10B981', width=3, dash='dash'),
+    marker=dict(size=7)
+))
+
+# Profit
+fig.add_trace(go.Scatter(
+    x=monthly_metrics['month'],
+    y=monthly_metrics['profit'],
+    mode='lines+markers',
+    name='Profit',
+    line=dict(color='#F59E0B', width=3, dash='dot'),
+    marker=dict(size=7)
+))
+
 fig.update_layout(
-    plot_bgcolor='#FFFFFF',
-    paper_bgcolor='#FFFFFF',
-    font=dict(color="#0F172A", size=13),
-    title_font=dict(size=20),
-    margin=dict(t=50, b=40),
-    xaxis=dict(showgrid=False),
-    yaxis=dict(showgrid=True, gridcolor='#E5E7EB'),
+    title="📊 Monthly Sales Overview",
+    title_font_size=22,
     xaxis_title="Month",
-    yaxis_title="Amount",
-    legend_title_text="Metric"
+    yaxis_title="Amount (₹)",
+    font=dict(family="Segoe UI", size=14, color="#0F172A"),
+    plot_bgcolor="#FFFFFF",
+    paper_bgcolor="#FFFFFF",
+    xaxis=dict(showgrid=False),
+    yaxis=dict(gridcolor="#E5E7EB"),
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="right",
+        x=1
+    ),
+    margin=dict(t=60, b=50, l=30, r=30),
+    hovermode="x unified"
 )
+
 st.plotly_chart(fig, use_container_width=True)
 
-# Category-wise Sales Chart
-st.markdown("###  Category-wise Sales")
+# ----------------------------- Category-wise Sales -----------------------------
+st.markdown("### 📦 Category-wise Sales")
+
 category_sales = sales_df.merge(filtered_products, on='product_id', how='left')
 category_grouped = category_sales.groupby('category')['quantity_sold'].sum().reset_index()
 
 if not category_grouped.empty:
-    category_fig = px.bar(category_grouped, x='category', y='quantity_sold',
-                          title="Category-wise Sales", color='quantity_sold',
-                          color_continuous_scale='Blues')
+    category_fig = px.bar(
+        category_grouped,
+        x='category',
+        y='quantity_sold',
+        title="Category-wise Sales",
+        color='quantity_sold',
+        color_continuous_scale=px.colors.sequential.Blues
+    )
+
     category_fig.update_layout(
         plot_bgcolor='#FFFFFF',
         paper_bgcolor='#FFFFFF',
         xaxis_title="Category",
         yaxis_title="Units Sold",
-        font=dict(color="#0F172A", size=13),
-        title_font=dict(size=20)
+        font=dict(family="Segoe UI", size=14, color="#0F172A"),
+        title_font=dict(size=22),
+        margin=dict(t=60, b=50, l=30, r=30),
+        coloraxis_showscale=False
     )
+
     st.plotly_chart(category_fig, use_container_width=True)
 else:
     st.info("No sales data available to display category-wise insights.")
