@@ -83,22 +83,18 @@ st.markdown("<h1>Expense Management</h1>", unsafe_allow_html=True)
 conn = get_connection()
 cursor = conn.cursor()
 
-# --- Add Expenses Manually ---
+# --- Add Expenses Section ---
 st.markdown("### Add Expenses")
 
-add_clicked = st.markdown("""
-    <form action="" method="post">
-        <button class="add-expense-btn" type="submit" name="add">+</button>
-    </form>
-""", unsafe_allow_html=True)
+# Custom styled "+" button using st.button
+col_add = st.columns([0.1, 0.9])[0]
+with col_add:
+    add_clicked = st.button("➕ Add Expense", key="add_expense_button", help="Click to add an expense")
 
-if "add_expense" not in st.session_state:
-    st.session_state["add_expense"] = False
+if add_clicked or st.session_state.get("show_form", False):
+    st.session_state["show_form"] = True  # Keep form visible once triggered
 
-if st.form("trigger_form", clear_on_submit=True).form_submit_button("trigger"):
-    st.session_state["add_expense"] = not st.session_state["add_expense"]
-
-if st.session_state["add_expense"]:
+if st.session_state.get("show_form", False):
     with st.form("expense_form"):
         col1, col2, col3 = st.columns(3)
         with col1:
