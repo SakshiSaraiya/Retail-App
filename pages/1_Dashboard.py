@@ -313,30 +313,33 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # ----------------------------- Category-wise Sales -----------------------------
-st.markdown("### 📦 Category-wise Sales")
+st.markdown("###  Category-wise Sales")
 
 category_sales = sales_df.merge(filtered_products, on='product_id', how='left')
 category_grouped = category_sales.groupby('category')['quantity_sold'].sum().reset_index()
 
 if not category_grouped.empty:
+    # Use a categorical color scale for better visibility
+    color_map = px.colors.qualitative.Set2  # Colorful, high contrast
+
     category_fig = px.bar(
         category_grouped,
         x='category',
         y='quantity_sold',
-        title="Category-wise Sales",
-        color='quantity_sold',
-        color_continuous_scale=px.colors.sequential.Blues
+        color='category',
+        title="📊 Category-wise Units Sold",
+        color_discrete_sequence=color_map
     )
 
     category_fig.update_layout(
         plot_bgcolor='#FFFFFF',
         paper_bgcolor='#FFFFFF',
-        xaxis_title="Category",
-        yaxis_title="Units Sold",
         font=dict(family="Segoe UI", size=14, color="#0F172A"),
         title_font=dict(size=22),
-        margin=dict(t=60, b=50, l=30, r=30),
-        coloraxis_showscale=False
+        xaxis_title="Category",
+        yaxis_title="Units Sold",
+        legend_title="Category",
+        margin=dict(t=60, b=50, l=30, r=30)
     )
 
     st.plotly_chart(category_fig, use_container_width=True)
