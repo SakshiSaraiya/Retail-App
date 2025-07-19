@@ -27,20 +27,20 @@ st.markdown("""
     .metric-card {
         background-color: #1E293B;
         color: #FFFFFF;
-        padding: 0.4rem 0.6rem;
-        border-radius: 0.6rem;
+        padding: 0.6rem 0.8rem;
+        border-radius: 0.75rem;
         box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         text-align: center;
         margin-bottom: 1rem;
         min-height: 80px;
     }
     .metric-card h4 {
-        font-size: 1.05rem;
-        margin-bottom: 0.2rem;
-        color: #E2E8F0;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+        color: #F8FAFC;
     }
     .metric-card h2 {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         margin: 0;
         font-weight: 700;
         color: #FACC15;
@@ -162,62 +162,78 @@ col1, col2 = st.columns(2)
 
 with col1:
     if not pending.empty:
+        st.markdown("<div style='background-color:#FDE68A;padding:1rem;border-radius:0.5rem;'>", unsafe_allow_html=True)
         st.warning(f"Pending Payments: {len(pending)}")
         st.dataframe(pending[['vendor_name', 'product_name', 'payment_due_date']], use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.success("No pending payments.")
 
 with col2:
     if not overdue.empty:
+        st.markdown("<div style='background-color:#FCA5A5;padding:1rem;border-radius:0.5rem;'>", unsafe_allow_html=True)
         st.error(f"Overdue Payments: {len(overdue)}")
         st.dataframe(overdue[['vendor_name', 'product_name', 'payment_due_date']], use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.success("No overdue payments.")
 
 # -------------------------
-# Visualizations
+# Visualizations (Updated Layout & Color)
 # -------------------------
 st.markdown("---")
 
-vc1, vc2 = st.columns(2)
+# Donut Chart for Vendors
+col1, col2 = st.columns(2)
 
-# Donut Chart
-vendor_donut = filtered.groupby('vendor_name')['quantity_purchased'].sum().reset_index()
-fig_donut = px.pie(
-    vendor_donut, names='vendor_name', values='quantity_purchased',
-    hole=0.4, color_discrete_sequence=px.colors.qualitative.Set2,
-    title="Vendor Contribution to Purchases"
-)
-fig_donut.update_layout(showlegend=True, font=dict(size=13, color="#0F172A"), plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF")
-vc1.plotly_chart(fig_donut, use_container_width=True)
+with col1:
+    vendor_summary = filtered.groupby('vendor_name')['quantity_purchased'].sum().reset_index()
+    fig_donut = px.pie(
+        vendor_summary,
+        names='vendor_name',
+        values='quantity_purchased',
+        title="Vendor Share",
+        hole=0.45,
+        color_discrete_sequence=px.colors.qualitative.Set2
+    )
+    fig_donut.update_layout(
+        font=dict(family="Segoe UI", size=14, color="#0F172A"),
+        showlegend=True,
+        plot_bgcolor="#FFFFFF",
+        paper_bgcolor="#FFFFFF"
+    )
+    st.plotly_chart(fig_donut, use_container_width=True)
 
-# Horizontal Bar Chart
-fig_vendor = px.bar(
-    vendor_donut.sort_values(by='quantity_purchased'),
-    x='quantity_purchased', y='vendor_name', orientation='h',
-    text='quantity_purchased', color='vendor_name',
-    color_discrete_sequence=px.colors.qualitative.Pastel1,
-    title="Quantity Purchased by Vendor"
-)
-fig_vendor.update_layout(showlegend=False, xaxis_title="Quantity", yaxis_title="Vendor", font=dict(size=13), plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF")
-vc2.plotly_chart(fig_vendor, use_container_width=True)
+# Top Products Chart
+with col2:
+    product_summary = filtered.groupby('product_name')['quantity_purchased'].sum().reset_index().sort_values(by='quantity_purchased', ascending=False)
+    fig_product = px.bar(
+        product_summary,
+        x='product_name',
+        y='quantity_purchased',
+        title="Top Products by Purchase Volume",
+        color='quantity_purchased',
+        color_continuous_scale='Plasma'
+    )
+    fig_product.update_layout(
+        xaxis_title="Product", yaxis_title="Quantity",
+        font=dict(family="Segoe UI", size=14, color="#0F172A"),
+        plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF"
+    )
+    st.plotly_chart(fig_product, use_container_width=True)
 
-# Area Chart for Monthly Trend
+# Monthly Trend
 monthly_summary = filtered.groupby(filtered['order_date'].dt.to_period('M').astype(str))['quantity_purchased'].sum().reset_index()
 fig_monthly = px.area(
-    monthly_summary, x='order_date', y='quantity_purchased',
-    title="Monthly Purchase Volume", markers=True,
-    color_discrete_sequence=['#2563EB']
+    monthly_summary,
+    x='order_date',
+    y='quantity_purchased',
+    title="Monthly Purchase Volume",
+    color_discrete_sequence=['#1D4ED8']
 )
-fig_monthly.update_layout(xaxis_title="Month", yaxis_title="Quantity", font=dict(size=14, color="#0F172A"), plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF")
+fig_monthly.update_layout(
+    xaxis_title="Month", yaxis_title="Quantity",
+    font=dict(family="Segoe UI", size=14, color="#0F172A"),
+    plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF"
+)
 st.plotly_chart(fig_monthly, use_container_width=True)
-
-# Product-wise Bar Chart
-product_summary = filtered.groupby('product_name')['quantity_purchased'].sum().reset_index().sort_values(by='quantity_purchased', ascending=False)
-fig_product = px.bar(
-    product_summary, x='product_name', y='quantity_purchased',
-    title="Top Products by Purchase Volume",
-    color='quantity_purchased', color_continuous_scale='Plasma'
-)
-fig_product.update_layout(xaxis_title="Product", yaxis_title="Quantity", font=dict(size=14), plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF")
-st.plotly_chart(fig_product, use_container_width=True)
