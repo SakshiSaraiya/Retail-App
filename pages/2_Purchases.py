@@ -1,120 +1,132 @@
-import streamlit as st
+""import streamlit as st
 import pandas as pd
 import plotly.express as px
 from db_connector import get_connection
 
 st.set_page_config(page_title="Purchases", layout="wide")
 
-# ---------- Custom Styling ----------
+# -------------------------
+# Custom Styling
+# -------------------------
 st.markdown("""
     <style>
-        html, body, [class*="css"] {
-            background-color: #F9FAFB;
-            font-family: 'Segoe UI', 'Roboto', sans-serif;
-        }
+    body {
+        background-color: #F9FAFB;
+        font-family: 'Segoe UI', 'Roboto', sans-serif;
+    }
 
-        [data-testid="stSidebar"] {
-            background-color: #1E293B;
-            color: white;
-        }
+    [data-testid="stSidebar"] {
+        background-color: #1E293B;
+    }
 
-        [data-testid="stSidebar"] * {
-            color: #E2E8F0 !important;
-            font-size: 0.95rem !important;
-            font-weight: 500 !important;
-        }
+    [data-testid="stSidebar"] * {
+        color: #E2E8F0 !important;
+        font-size: 0.95rem;
+    }
 
-        .card {
-            background-color: #FFFFFF;
-            border-radius: 0.75rem;
-            padding: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            text-align: center;
-        }
-
-        .card h4 {
-            margin: 0;
-            font-size: 1rem;
-            color: #475569;
-            font-weight: 600;
-        }
-
-        .card h2 {
-            margin: 0;
-            font-size: 1.7rem;
-            font-weight: 800;
-            color: #0F172A;
-        }
-
-        .dataframe thead tr th {
-            background-color: #E2E8F0;
-            color: #1E293B;
-            font-weight: bold;
-        }
-
-        .dataframe tbody tr td {
-            font-size: 0.95rem;
-            color: #1F2937;
-        }
-
-        .stAlert {
-            background-color: #FFF7ED !important;
-            color: #92400E !important;
-            border: 1px solid #FDBA74 !important;
-            font-weight: 500;
-            border-radius: 0.5rem;
-        }
-
-        footer {visibility: hidden;}
+    .metric-card {
+        background-color: #1E293B;
+        color: #FFFFFF;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    .metric-card h4 {
+        font-size: 1.1rem;
+        margin: 0;
+        color: #CBD5E1;
+    }
+    .metric-card h2 {
+        font-size: 2.2rem;
+        margin: 0;
+        font-weight: 800;
+        color: #FACC15;
+    }
+    h1, h2, h3, h4, h5, h6, p {
+        color: #0F172A;
+    }
+    .dataframe tbody td {
+        font-size: 0.95rem;
+        color: #1F2937;
+    }
+    .dataframe thead th {
+        background-color: #E2E8F0;
+        font-weight: bold;
+        color: #1E293B;
+    }
     </style>
 """, unsafe_allow_html=True)
 
+# -------------------------
+# Title
+# -------------------------
 st.markdown("""
-    <h2 style='margin-bottom: 1rem; color: #0F172A;'>Purchase Overview</h2>
+    <h2 style='margin-bottom: 1rem;'>Purchase Overview</h2>
 """, unsafe_allow_html=True)
 
-# ---------- Connect & Load Data ----------
+# -------------------------
+# Connect to SQL
+# -------------------------
 conn = get_connection()
+
+# -------------------------
+# Load Data from SQL
+# -------------------------
 purchases = pd.read_sql("SELECT * FROM purchases", conn)
 purchases['order_date'] = pd.to_datetime(purchases['order_date'], errors='coerce')
 purchases['payment_due_date'] = pd.to_datetime(purchases['payment_due_date'], errors='coerce')
 
-# ---------- KPIs ----------
+# -------------------------
+# Compute KPIs
+# -------------------------
 total_orders = len(purchases)
 total_quantity = purchases['quantity_purchased'].sum()
 total_cost = (purchases['quantity_purchased'] * purchases['cost_price']).sum()
 vendors = purchases['vendor_name'].nunique()
 
-st.markdown("""
-    <h3 style='margin-top: 1.5rem; color: #334155;'>Key Metrics</h3>
-""", unsafe_allow_html=True)
-k1, k2, k3, k4 = st.columns(4)
-k1.markdown(f"""
-    <div class='card'>
-        <h4>Total Orders</h4>
-        <h2>{total_orders}</h2>
-    </div>
-""", unsafe_allow_html=True)
-k2.markdown(f"""
-    <div class='card'>
-        <h4>Units Purchased</h4>
-        <h2>{int(total_quantity)}</h2>
-    </div>
-""", unsafe_allow_html=True)
-k3.markdown(f"""
-    <div class='card'>
-        <h4>Total Spend</h4>
-        <h2>₹ {total_cost:,.2f}</h2>
-    </div>
-""", unsafe_allow_html=True)
-k4.markdown(f"""
-    <div class='card'>
-        <h4>Vendors</h4>
-        <h2>{vendors}</h2>
-    </div>
-""", unsafe_allow_html=True)
+# -------------------------
+# KPI Display
+# -------------------------
+st.markdown("<h4 style='margin-top:2rem;'>Key Metrics</h4>", unsafe_allow_html=True)
+col1, col2, col3, col4 = st.columns(4)
 
-# ---------- Sidebar Filters ----------
+with col1:
+    st.markdown(f"""
+        <div class='metric-card'>
+            <h4>Total Orders</h4>
+            <h2>{total_orders}</h2>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown(f"""
+        <div class='metric-card'>
+            <h4>Units Purchased</h4>
+            <h2>{int(total_quantity)}</h2>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown(f"""
+        <div class='metric-card'>
+            <h4>Total Spend</h4>
+            <h2>₹ {total_cost:,.2f}</h2>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col4:
+    st.markdown(f"""
+        <div class='metric-card'>
+            <h4>Vendors</h4>
+            <h2>{vendors}</h2>
+        </div>
+    """, unsafe_allow_html=True)
+
+# -------------------------
+# Sidebar Filters
+# -------------------------
 st.sidebar.header("Filter Purchases")
 product_filter = st.sidebar.multiselect("Product", purchases['product_name'].dropna().unique(), default=purchases['product_name'].unique())
 vendor_filter = st.sidebar.multiselect("Vendor", purchases['vendor_name'].dropna().unique(), default=purchases['vendor_name'].unique())
@@ -130,11 +142,16 @@ filtered = purchases[
     (purchases['order_date'] <= pd.to_datetime(end_date))
 ]
 
-# ---------- Purchase Table ----------
-st.markdown("<h3 style='color:#334155;'>Purchase Records</h3>", unsafe_allow_html=True)
+# -------------------------
+# Display Filtered Table
+# -------------------------
+st.markdown("<h4 style='margin-top:2rem;'>Purchase Records</h4>", unsafe_allow_html=True)
 expected_cols = ['product_id', 'product_name', 'category', 'vendor_name', 'quantity_purchased', 'cost_price', 'order_date', 'payment_due_date', 'payment_status']
 available_cols = [col for col in expected_cols if col in filtered.columns]
 st.dataframe(filtered[available_cols], use_container_width=True)
+
+# Next sections (charts and alerts) can be upgraded similarly
+
 
 # ---------- Payment Alerts ----------
 st.markdown("<h3 style='margin-top:2rem; color:#334155;'>Payment Alerts</h3>", unsafe_allow_html=True)
