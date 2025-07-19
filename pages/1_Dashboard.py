@@ -138,24 +138,28 @@ total_units_sold = sales_df['quantity_sold'].sum()
 total_revenue = (sales_df['quantity_sold'] * sales_df['selling_price']).sum()
 total_profit = sales_df['profit'].sum()
 
-# Metrics Display
-st.markdown("### 📌 Key Metrics")
-m1, m2, m3 = st.columns(3)
-with m1:
-    m1.markdown(f"<div class='metric-card'><h4>Total Products</h4><h2>{total_products}</h2></div>", unsafe_allow_html=True)
-with m2:
-    m2.markdown(f"<div class='metric-card'><h4>Total Stock</h4><h2>{int(total_stock_value)}</h2></div>", unsafe_allow_html=True)
-with m3:
-    m3.markdown(f"<div class='metric-card'><h4>Units Sold</h4><h2>{int(total_units_sold)}</h2></div>", unsafe_allow_html=True)
+# Updated: Metrics Display with 2 clean rows of 3
+st.markdown("###  Key Metrics")
+row1_col1, row1_col2, row1_col3 = st.columns(3)
+with row1_col1:
+    st.markdown(f"<div class='metric-card'><h4>Total Products</h4><h2>{total_products}</h2></div>", unsafe_allow_html=True)
+with row1_col2:
+    st.markdown(f"<div class='metric-card'><h4>Total Stock</h4><h2>{int(total_stock_value)}</h2></div>", unsafe_allow_html=True)
+with row1_col3:
+    st.markdown(f"<div class='metric-card'><h4>Units Sold</h4><h2>{int(total_units_sold)}</h2></div>", unsafe_allow_html=True)
 
-m4, m5 = st.columns(2)
-with m4:
-    m4.markdown(f"<div class='metric-card'><h4>Total Revenue</h4><h2>₹ {total_revenue:,.2f}</h2></div>", unsafe_allow_html=True)
-with m5:
-    m5.markdown(f"<div class='metric-card'><h4>Total Profit</h4><h2>₹ {total_profit:,.2f}</h2></div>", unsafe_allow_html=True)
+row2_col1, row2_col2, row2_col3 = st.columns(3)
+with row2_col1:
+    st.markdown(f"<div class='metric-card'><h4>Total Revenue</h4><h2>₹ {total_revenue:,.2f}</h2></div>", unsafe_allow_html=True)
+with row2_col2:
+    st.markdown(f"<div class='metric-card'><h4>Total Profit</h4><h2>₹ {total_profit:,.2f}</h2></div>", unsafe_allow_html=True)
+with row2_col3:
+    profit_margin = (total_profit / total_revenue * 100) if total_revenue else 0
+    st.markdown(f"<div class='metric-card'><h4>Profit Margin</h4><h2>{profit_margin:.1f}%</h2></div>", unsafe_allow_html=True)
+
 
 # Highlights
-st.markdown("### 🏆 Highlights")
+st.markdown("###  Highlights")
 top_product = sales_df.groupby('product_id')['quantity_sold'].sum().reset_index()
 top_product = top_product.merge(filtered_products, on='product_id', how='left').sort_values(by='quantity_sold', ascending=False).head(1)
 
@@ -170,10 +174,10 @@ trend_icon = "↑" if change >= 0 else "↓"
 
 h1, h2, h3 = st.columns(3)
 if not top_product.empty:
-    h1.markdown(f"<div class='highlight-box'>🔥 Best-Selling: <b>{top_product.iloc[0]['product_name']}</b> ({int(top_product.iloc[0]['quantity_sold'])} sold)</div>", unsafe_allow_html=True)
+    h1.markdown(f"<div class='highlight-box'> Best-Selling: <b>{top_product.iloc[0]['product_name']}</b> ({int(top_product.iloc[0]['quantity_sold'])} sold)</div>", unsafe_allow_html=True)
 if not category_profit.empty:
-    h2.markdown(f"<div class='highlight-box'>📊 Top Category: <b>{category_profit.iloc[0]['category']}</b> (₹ {category_profit.iloc[0]['profit']:,.0f})</div>", unsafe_allow_html=True)
-h3.markdown(f"<div class='highlight-box'>📈 Sales Trend: {trend_icon} {abs(change)} vs last 7 days</div>", unsafe_allow_html=True)
+    h2.markdown(f"<div class='highlight-box'> Top Category: <b>{category_profit.iloc[0]['category']}</b> (₹ {category_profit.iloc[0]['profit']:,.0f})</div>", unsafe_allow_html=True)
+h3.markdown(f"<div class='highlight-box'> Sales Trend: {trend_icon} {abs(change)} vs last 7 days</div>", unsafe_allow_html=True)
 
 # Low Stock
 st.markdown("### ⚠️ Low Stock Alerts")
@@ -188,7 +192,7 @@ else:
     st.success("✅ All products have sufficient stock.")
 
 # Monthly Sales Chart
-st.markdown("### 📅 Monthly Sales Overview")
+st.markdown("###  Monthly Sales Overview")
 sales_df = sales_df.dropna(subset=['sales_date'])
 sales_df['month'] = sales_df['sales_date'].dt.to_period('M').astype(str)
 monthly_metrics = sales_df.groupby('month').agg({
@@ -211,7 +215,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # Category-wise Sales Chart
-st.markdown("### 📦 Category-wise Sales")
+st.markdown("###  Category-wise Sales")
 category_sales = sales_df.merge(filtered_products, on='product_id', how='left')
 category_grouped = category_sales.groupby('category')['quantity_sold'].sum().reset_index()
 
