@@ -41,7 +41,7 @@ st.markdown(
             padding: 0.9rem 1rem;
             border-radius: 1rem;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 1.05rem;
             box-shadow: 0 3px 6px rgba(0,0,0,0.08);
             display: flex;
             align-items: center;
@@ -124,8 +124,8 @@ def render_metric(title, value):
         align-items: center;
         justify-content: center;
     '>
-        <h4 style='font-size: 0.85rem; color: #64748B; margin: 0;'>{title}</h4>
-        <h2 style='font-size: 1.4rem; color: #0F172A; margin: 0; font-weight: 700;'>{value}</h2>
+        <h4 style='font-size: 0.95rem; color: #64748B; margin: 0;'>{title}</h4>
+        <h2 style='font-size: 1.6rem; color: #0F172A; margin: 0; font-weight: 800;'>{value}</h2>
     </div>
     """
 
