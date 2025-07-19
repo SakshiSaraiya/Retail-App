@@ -27,19 +27,20 @@ st.markdown("""
     .metric-card {
         background-color: #1E293B;
         color: #FFFFFF;
-        padding: 0.75rem 0.75rem;
+        padding: 0.4rem 0.6rem;
         border-radius: 0.6rem;
         box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         text-align: center;
-        min-height: 85px;
+        margin-bottom: 1rem;
+        min-height: 80px;
     }
     .metric-card h4 {
-        font-size: 0.85rem;
-        margin-bottom: 0.25rem;
-        color: #CBD5E1;
+        font-size: 1.05rem;
+        margin-bottom: 0.2rem;
+        color: #E2E8F0;
     }
     .metric-card h2 {
-        font-size: 1.4rem;
+        font-size: 1.8rem;
         margin: 0;
         font-weight: 700;
         color: #FACC15;
@@ -176,36 +177,47 @@ with col2:
 # -------------------------
 # Visualizations
 # -------------------------
-st.markdown("<h3 style='margin-top:2rem;'>Visual Insights</h3>", unsafe_allow_html=True)
+st.markdown("---")
 
-# Vendor Donut + Bar Chart
-v_summary = filtered.groupby('vendor_name')['quantity_purchased'].sum().reset_index()
+vc1, vc2 = st.columns(2)
 
-col1, col2 = st.columns(2)
-with col1:
-    fig_donut = px.pie(v_summary, names='vendor_name', values='quantity_purchased', hole=0.45,
-                       title='Vendor Share of Purchases', color_discrete_sequence=px.colors.qualitative.Set3)
-    fig_donut.update_traces(textinfo='percent+label')
-    fig_donut.update_layout(showlegend=True, plot_bgcolor='#FFFFFF', paper_bgcolor='#FFFFFF')
-    st.plotly_chart(fig_donut, use_container_width=True)
+# Donut Chart
+vendor_donut = filtered.groupby('vendor_name')['quantity_purchased'].sum().reset_index()
+fig_donut = px.pie(
+    vendor_donut, names='vendor_name', values='quantity_purchased',
+    hole=0.4, color_discrete_sequence=px.colors.qualitative.Set2,
+    title="Vendor Contribution to Purchases"
+)
+fig_donut.update_layout(showlegend=True, font=dict(size=13, color="#0F172A"), plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF")
+vc1.plotly_chart(fig_donut, use_container_width=True)
 
-with col2:
-    fig_vendor = px.bar(v_summary, x='quantity_purchased', y='vendor_name', orientation='h',
-                        title='Total Units Purchased by Vendor', color='quantity_purchased',
-                        color_continuous_scale='Blues')
-    fig_vendor.update_layout(plot_bgcolor='#FFFFFF', paper_bgcolor='#FFFFFF', showlegend=False)
-    st.plotly_chart(fig_vendor, use_container_width=True)
+# Horizontal Bar Chart
+fig_vendor = px.bar(
+    vendor_donut.sort_values(by='quantity_purchased'),
+    x='quantity_purchased', y='vendor_name', orientation='h',
+    text='quantity_purchased', color='vendor_name',
+    color_discrete_sequence=px.colors.qualitative.Pastel1,
+    title="Quantity Purchased by Vendor"
+)
+fig_vendor.update_layout(showlegend=False, xaxis_title="Quantity", yaxis_title="Vendor", font=dict(size=13), plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF")
+vc2.plotly_chart(fig_vendor, use_container_width=True)
 
-# Monthly Area Chart
+# Area Chart for Monthly Trend
 monthly_summary = filtered.groupby(filtered['order_date'].dt.to_period('M').astype(str))['quantity_purchased'].sum().reset_index()
-fig_area = px.area(monthly_summary, x='order_date', y='quantity_purchased',
-                   title='Monthly Purchase Volume', markers=True, color_discrete_sequence=['#0EA5E9'])
-fig_area.update_layout(plot_bgcolor='#FFFFFF', paper_bgcolor='#FFFFFF', showlegend=False)
-st.plotly_chart(fig_area, use_container_width=True)
+fig_monthly = px.area(
+    monthly_summary, x='order_date', y='quantity_purchased',
+    title="Monthly Purchase Volume", markers=True,
+    color_discrete_sequence=['#2563EB']
+)
+fig_monthly.update_layout(xaxis_title="Month", yaxis_title="Quantity", font=dict(size=14, color="#0F172A"), plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF")
+st.plotly_chart(fig_monthly, use_container_width=True)
 
-# Product Bar
+# Product-wise Bar Chart
 product_summary = filtered.groupby('product_name')['quantity_purchased'].sum().reset_index().sort_values(by='quantity_purchased', ascending=False)
-fig_product = px.bar(product_summary, x='product_name', y='quantity_purchased',
-                     title='Top Products by Volume', color='quantity_purchased', color_continuous_scale='Viridis')
-fig_product.update_layout(plot_bgcolor='#FFFFFF', paper_bgcolor='#FFFFFF', showlegend=False)
+fig_product = px.bar(
+    product_summary, x='product_name', y='quantity_purchased',
+    title="Top Products by Purchase Volume",
+    color='quantity_purchased', color_continuous_scale='Plasma'
+)
+fig_product.update_layout(xaxis_title="Product", yaxis_title="Quantity", font=dict(size=14), plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF")
 st.plotly_chart(fig_product, use_container_width=True)
