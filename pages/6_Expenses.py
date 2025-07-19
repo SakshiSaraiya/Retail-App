@@ -5,22 +5,17 @@ from datetime import datetime
 
 st.set_page_config(page_title="Expense Dashboard", layout="wide")
 
-# Minimal CSS to only change text colors
+# ✅ Text only color change (background stays white)
 st.markdown("""
     <style>
-        .stTextInput input, .stDateInput input, .stSelectbox div, .stNumberInput input {
+        html, body, [class*="css"]  {
             color: black !important;
-        }
-        .stMarkdown, .stSelectbox label, .stTextInput label, .stNumberInput label, .stDateInput label {
-            color: black !important;
-        }
-        .stButton button {
-            color: black !important;
+            background-color: white !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Initialize session data
+# Initialize session state
 if "expenses" not in st.session_state:
     data = {
         "date": ["2025-07-17", "2025-07-14"],
@@ -31,9 +26,7 @@ if "expenses" not in st.session_state:
     }
     st.session_state.expenses = pd.DataFrame(data)
 
-# -----------------------------
-# 🔼 Add Expense (Now at Top)
-# -----------------------------
+# ✅ 🔼 First Section: Add Expense
 st.title("Add Expense")
 
 with st.form("add_expense_form"):
@@ -60,9 +53,7 @@ with st.form("add_expense_form"):
         st.session_state.expenses = pd.concat([st.session_state.expenses, new_row], ignore_index=True)
         st.success("Expense added!")
 
-# -----------------------------
-# 🔼 CSV Upload (Now just below Add)
-# -----------------------------
+# ✅ 🔼 Second Section: Upload CSV
 st.subheader("Upload CSV File")
 
 with st.expander("View Sample Format"):
@@ -81,9 +72,7 @@ if uploaded:
     except Exception as e:
         st.error(f"Upload error: {e}")
 
-# -----------------------------
-# 🔽 Expense History and Trends
-# -----------------------------
+# ✅ 🔽 Third Section: Expense History and Chart
 df = st.session_state.expenses
 st.title("Expense History and Trend")
 st.dataframe(df, use_container_width=True)
@@ -91,7 +80,6 @@ st.dataframe(df, use_container_width=True)
 st.subheader("Summary")
 
 col1, col2, col3 = st.columns(3)
-
 with col1:
     st.metric("Total Expense", f"₹ {df['amount'].sum():,.2f}")
 with col2:
@@ -111,7 +99,7 @@ fig = px.bar(
     color="expense_type",
     barmode="group",
     labels={"amount": "Expense Amount", "Month": "Month"},
-    color_discrete_sequence=["#4a4aff", "#8888ff"]
+    color_discrete_sequence=px.colors.qualitative.Plotly
 )
 
 fig.update_layout(
