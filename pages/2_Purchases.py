@@ -27,43 +27,34 @@ st.markdown("""
     .metric-card {
         background-color: #1E293B;
         color: #FFFFFF;
-        padding: 0.75rem 1rem;
-        border-radius: 0.75rem;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        text-align: left;
-        margin-bottom: 1rem;
-        min-height: 110px;
+        padding: 0.75rem 0.75rem;
+        border-radius: 0.6rem;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        text-align: center;
+        min-height: 85px;
     }
     .metric-card h4 {
-        font-size: 1rem;
-        margin: 0 0 0.4rem 0;
-        color: #94A3B8;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+        color: #CBD5E1;
     }
     .metric-card h2 {
-        font-size: 1.8rem;
+        font-size: 1.4rem;
         margin: 0;
-        font-weight: 800;
+        font-weight: 700;
         color: #FACC15;
     }
-    .metric-card span {
-        display: block;
-        font-size: 0.8rem;
-        margin-top: 0.3rem;
-        color: #A5B4FC;
-    }
-
     h1, h2, h3, h4, h5, h6, p {
         color: #0F172A;
     }
-
     .dataframe tbody td {
         font-size: 0.95rem;
         color: #1F2937;
     }
     .dataframe thead th {
-        background-color: #1E293B;
+        background-color: #CBD5E1;
         font-weight: bold;
-        color: #F1F5F9;
+        color: #1E293B;
         font-size: 0.95rem;
     }
     </style>
@@ -107,7 +98,6 @@ with col1:
         <div class='metric-card'>
             <h4>Total Orders</h4>
             <h2>{total_orders}</h2>
-            <span>Across all vendors</span>
         </div>
     """, unsafe_allow_html=True)
 
@@ -116,7 +106,6 @@ with col2:
         <div class='metric-card'>
             <h4>Units Purchased</h4>
             <h2>{int(total_quantity)}</h2>
-            <span>In current timeframe</span>
         </div>
     """, unsafe_allow_html=True)
 
@@ -125,16 +114,14 @@ with col3:
         <div class='metric-card'>
             <h4>Total Spend</h4>
             <h2>₹ {total_cost:,.2f}</h2>
-            <span>Gross purchase cost</span>
         </div>
     """, unsafe_allow_html=True)
 
 with col4:
     st.markdown(f"""
         <div class='metric-card'>
-            <h4>Unique Vendors</h4>
+            <h4>Vendors</h4>
             <h2>{vendors}</h2>
-            <span>Active suppliers</span>
         </div>
     """, unsafe_allow_html=True)
 
@@ -187,53 +174,38 @@ with col2:
         st.success("No overdue payments.")
 
 # -------------------------
-# Visualizations (Improved)
+# Visualizations
 # -------------------------
-st.markdown("---")
+st.markdown("<h3 style='margin-top:2rem;'>Visual Insights</h3>", unsafe_allow_html=True)
 
-# Donut Chart - Vendor-wise share
-vendor_share = filtered.groupby('vendor_name')['quantity_purchased'].sum().reset_index()
-fig_donut = px.pie(
-    vendor_share,
-    names='vendor_name',
-    values='quantity_purchased',
-    title="Vendor Share by Quantity",
-    hole=0.5,
-    color_discrete_sequence=px.colors.qualitative.Pastel
-)
-fig_donut.update_layout(showlegend=True, plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF")
-st.plotly_chart(fig_donut, use_container_width=True)
+# Vendor Donut + Bar Chart
+v_summary = filtered.groupby('vendor_name')['quantity_purchased'].sum().reset_index()
 
-# Area Chart - Monthly trend
+col1, col2 = st.columns(2)
+with col1:
+    fig_donut = px.pie(v_summary, names='vendor_name', values='quantity_purchased', hole=0.45,
+                       title='Vendor Share of Purchases', color_discrete_sequence=px.colors.qualitative.Set3)
+    fig_donut.update_traces(textinfo='percent+label')
+    fig_donut.update_layout(showlegend=True, plot_bgcolor='#FFFFFF', paper_bgcolor='#FFFFFF')
+    st.plotly_chart(fig_donut, use_container_width=True)
+
+with col2:
+    fig_vendor = px.bar(v_summary, x='quantity_purchased', y='vendor_name', orientation='h',
+                        title='Total Units Purchased by Vendor', color='quantity_purchased',
+                        color_continuous_scale='Blues')
+    fig_vendor.update_layout(plot_bgcolor='#FFFFFF', paper_bgcolor='#FFFFFF', showlegend=False)
+    st.plotly_chart(fig_vendor, use_container_width=True)
+
+# Monthly Area Chart
 monthly_summary = filtered.groupby(filtered['order_date'].dt.to_period('M').astype(str))['quantity_purchased'].sum().reset_index()
-fig_area = px.area(
-    monthly_summary,
-    x='order_date',
-    y='quantity_purchased',
-    title="Monthly Purchase Volume",
-    color_discrete_sequence=['#0EA5E9']
-)
-fig_area.update_layout(
-    xaxis_title="Month", yaxis_title="Quantity",
-    font=dict(family="Segoe UI", size=14, color="#0F172A"),
-    plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF"
-)
+fig_area = px.area(monthly_summary, x='order_date', y='quantity_purchased',
+                   title='Monthly Purchase Volume', markers=True, color_discrete_sequence=['#0EA5E9'])
+fig_area.update_layout(plot_bgcolor='#FFFFFF', paper_bgcolor='#FFFFFF', showlegend=False)
 st.plotly_chart(fig_area, use_container_width=True)
 
-# Horizontal bar - Top products
-product_summary = filtered.groupby('product_name')['quantity_purchased'].sum().reset_index().sort_values(by='quantity_purchased', ascending=True)
-fig_barh = px.bar(
-    product_summary,
-    x='quantity_purchased',
-    y='product_name',
-    title="Top Products by Volume",
-    orientation='h',
-    color='quantity_purchased',
-    color_continuous_scale='Agsunset'
-)
-fig_barh.update_layout(
-    xaxis_title="Quantity", yaxis_title="Product",
-    font=dict(family="Segoe UI", size=14, color="#0F172A"),
-    plot_bgcolor="#FFFFFF", paper_bgcolor="#FFFFFF"
-)
-st.plotly_chart(fig_barh, use_container_width=True)
+# Product Bar
+product_summary = filtered.groupby('product_name')['quantity_purchased'].sum().reset_index().sort_values(by='quantity_purchased', ascending=False)
+fig_product = px.bar(product_summary, x='product_name', y='quantity_purchased',
+                     title='Top Products by Volume', color='quantity_purchased', color_continuous_scale='Viridis')
+fig_product.update_layout(plot_bgcolor='#FFFFFF', paper_bgcolor='#FFFFFF', showlegend=False)
+st.plotly_chart(fig_product, use_container_width=True)
