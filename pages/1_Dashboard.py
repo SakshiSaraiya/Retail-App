@@ -14,50 +14,106 @@ CARD_BG = "#FFFFFF"
 HIGHLIGHT_BG = "#1E293B"
 TEXT_COLOR = "#0F172A"
 FONT_FAMILY = "'Segoe UI', 'Roboto', sans-serif"
-
-# Inject Custom CSS
-st.markdown("""
+# Custom CSS Styling (Updated)
+st.markdown(
+    f"""
     <style>
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] {
-        background-color: #0F172A;
-    }
-    [data-testid="stSidebar"] * {
-        color: #E0E0E0 !important;
-        font-size: 0.9rem !important;
-    }
+        html, body, [class*="css"] {{
+            background-color: {BG_COLOR};
+            font-family: {FONT_FAMILY};
+        }}
 
-    /* Heading Styling */
-    h1 {
-        font-size: 3.2rem !important;
-        font-weight: 800 !important;
-        text-align: center;
-        color: #1E293B;
-        margin-bottom: 0.5rem;
-    }
-    h2 {
-        font-size: 1.7rem !important;
-        text-align: center;
-        color: #475569;
-        margin-bottom: 2rem;
-    }
+        /* Sidebar Styling */
+        [data-testid="stSidebar"] > div:first-child {{
+            background-color: {SIDEBAR_COLOR};
+            color: #f1f5f9 !important;
+            padding: 1.5rem;
+            border-radius: 0 1rem 1rem 0;
+        }}
 
-    /* Metric Cards */
-    .stMetric {
-        padding: 0.2rem !important;
-        margin-bottom: 1rem;
-    }
-    .stMetric > div {
-        padding: 0.8rem 0.5rem;
-        border-radius: 1rem;
-        background-color: #F8FAFC;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-    .stMetric label, .stMetric div {
-        font-size: 0.9rem;
-    }
+        [data-testid="stSidebar"] * {{
+            color: #f1f5f9 !important;
+            font-size: 0.93rem !important;
+        }}
+
+        .stMultiSelect label, .stSelectbox label, .stSlider label {{
+            color: #f8fafc !important;
+            font-weight: 500;
+        }}
+
+        .stSlider > div[data-baseweb="slider"] {{
+            padding: 0 1rem;
+        }}
+
+        /* Metric Cards */
+        .metric-card {{
+            background-color: {CARD_BG};
+            padding: 1rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 100px;
+            margin-bottom: 1rem;
+        }}
+
+        .metric-card h4 {{
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 0.3rem;
+            font-weight: 500;
+            text-align: center;
+        }}
+
+        .metric-card h2 {{
+            font-size: 1.4rem;
+            color: {TEXT_COLOR};
+            margin-top: 0;
+            font-weight: 700;
+            text-align: center;
+        }}
+
+        /* Heading Updates */
+        h1 {{
+            font-size: 3.2rem !important;
+            font-weight: 800 !important;
+            text-align: center;
+            color: #1E293B;
+            margin-bottom: 0.5rem;
+        }}
+
+        h3 {{
+            font-size: 1.7rem !important;
+            text-align: center;
+            color: #475569;
+            margin-bottom: 2rem;
+        }}
+
+        /* Highlight Boxes */
+        .highlight-box {{
+            background-color: {HIGHLIGHT_BG};
+            color: white;
+            padding: 1rem 0.8rem;
+            border-radius: 1rem;
+            font-weight: 500;
+            font-size: 0.93rem;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+        }}
+
+        .highlight-box b {{
+            color: #FACC15;
+        }}
+
+        footer {{
+            visibility: hidden;
+        }}
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
 # Centered Title
 st.markdown("<h1 style='text-align: center; margin-bottom: 1rem;'>Retail Dashboard</h1>", unsafe_allow_html=True)
