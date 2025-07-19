@@ -38,7 +38,7 @@ st.markdown(
         .card {{
             background-color: {CARD_BG};
             border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
+            padding: 1rem 1.25rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             margin-bottom: 1rem;
             text-align: center;
@@ -47,24 +47,25 @@ st.markdown(
 
         .card h4 {{
             margin: 0;
-            font-size: 0.85rem;
-            color: #64748B;
+            font-size: 1.1rem;
+            color: #475569;
+            font-weight: 600;
         }}
 
         .card h2 {{
             margin: 0;
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 2rem;
+            font-weight: 800;
             color: #0F172A;
         }}
 
         .highlight-box {{
             background-color: #1E293B;
             color: white;
-            padding: 1rem;
+            padding: 1.2rem 1rem;
             border-radius: 0.75rem;
-            font-weight: 500;
-            font-size: 1rem;
+            font-weight: 600;
+            font-size: 1.05rem;
             box-shadow: 0 3px 6px rgba(0,0,0,0.05);
             flex: 1;
             min-width: 200px;
@@ -77,6 +78,7 @@ st.markdown(
 
         .highlight-box b {{
             color: #FACC15;
+            font-size: 1.1rem;
         }}
 
         footer {{ visibility: hidden; }}
@@ -176,12 +178,26 @@ trend_icon = "↑" if change >= 0 else "↓"
 
 highlight_boxes = f"""
 <div style=\"display: flex; gap: 1rem; justify-content: space-between; flex-wrap: wrap;\">
-    <div class=\"highlight-box\">🛒 Best-Selling:<br> <b>{top_product.iloc[0]['product_name'] if not top_product.empty else "N/A"}</b><br>({int(top_product.iloc[0]['quantity_sold']) if not top_product.empty else 0} sold)</div>
-    <div class=\"highlight-box\">🏷️ Top Category:<br> <b>{category_profit.iloc[0]['category'] if not category_profit.empty else "N/A"}</b><br>(₹ {category_profit.iloc[0]['profit']:,.0f})</div>
-    <div class=\"highlight-box\">📈 Sales Trend:<br> {trend_icon} {abs(change)} vs last 7 days</div>
+    <div class=\"highlight-box\">
+        🛒 <span style='font-weight: 600;'>Best-Selling:</span><br>
+        <b>{top_product.iloc[0]['product_name'] if not top_product.empty else "N/A"}</b><br>
+        <span style='font-size: 1rem;'>({int(top_product.iloc[0]['quantity_sold']) if not top_product.empty else 0} sold)</span>
+    </div>
+    <div class=\"highlight-box\">
+        🏷️ <span style='font-weight: 600;'>Top Category:</span><br>
+        <b>{category_profit.iloc[0]['category'] if not category_profit.empty else "N/A"}</b><br>
+        <span style='font-size: 1rem;'>(₹ {category_profit.iloc[0]['profit']:,.0f})</span>
+    </div>
+    <div class=\"highlight-box\">
+        📉 <span style='font-weight: 600;'>Sales Trend:</span><br>
+        <span style='font-size: 1.2rem;'>{trend_icon} {abs(change)} vs last 7 days</span>
+    </div>
 </div>
 """
 st.markdown(highlight_boxes, unsafe_allow_html=True)
+
+# The rest of the code remains unchanged...
+
 
 
 # Low Stock
